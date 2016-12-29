@@ -38,7 +38,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		engine = new Engine(WIDTH, HEIGHT);
 		engine.setLevel(level);
 		
-		camera = new Camera(3, 10);
+		camera = new Camera(3, 10, this);
 		addKeyListener(camera);
 		
 		frame = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
@@ -64,6 +64,10 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		runDemo();
 	}
 	
+	public void stop() {
+		running = false;
+	}
+	
 	public void runDemo() {
 		long start, diff, sleepTime;
 
@@ -85,6 +89,8 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 				if (fps > FPS_LIMIT) {
 					fps = FPS_LIMIT;
 				}
+				
+				System.out.println("frameTime " + diff + " ns, sleepTime " + sleepTime +" ms , FPS "+fps);
 			}
 			
 			try {
@@ -92,6 +98,8 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 			} catch (InterruptedException e) {
 			}
 		}
+		
+		System.exit(0);
 	}
 	
 	private void drawFrame() {

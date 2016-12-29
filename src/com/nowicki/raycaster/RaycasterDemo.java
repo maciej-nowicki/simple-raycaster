@@ -6,6 +6,5 @@ public class RaycasterDemo {
 
 	public static void main(String[] args) {
 		RaycasterDisplay display = new RaycasterDisplay();
-		display.runDemo();
 	}
 }

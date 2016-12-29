@@ -6,14 +6,10 @@ import java.nio.file.Paths;
 
 public class Level {
 
-	public static int MAP_WIDTH = 20;
-	public static int MAP_HEIGHT = 20;
+	public static int DEFAULT_MAP_WIDTH = 20;
+	public static int DEFAULT_MAP_HEIGHT = 20;
 	
-	public static final int EMPTY = 0;
-	public static final int WALL = 1;
-
-	private int[][] map; 
-	
+	private int[][] map;
 	
 	public Level() {
 		initDummyMap();
@@ -43,20 +39,24 @@ public class Level {
 	}
 	
 	private void initDummyMap() {
-		map = new int[MAP_WIDTH][MAP_HEIGHT];
-		for (int y=0; y<MAP_HEIGHT; y++) {
-			for (int x=0; x<MAP_WIDTH; x++) {
-				if (x == 0 || y == 0 || x == MAP_WIDTH-1 || y == MAP_HEIGHT - 1) {
-					map[x][y] = WALL;
+		map = new int[DEFAULT_MAP_WIDTH][DEFAULT_MAP_HEIGHT];
+		for (int y=0; y<DEFAULT_MAP_HEIGHT; y++) {
+			for (int x=0; x<DEFAULT_MAP_WIDTH; x++) {
+				if (x == 0 || y == 0 || x == DEFAULT_MAP_WIDTH-1 || y == DEFAULT_MAP_HEIGHT - 1) {
+					map[x][y] = Element.WALL_1.getValue();
 				}
 				else {
-					map[x][y] = EMPTY;
+					map[x][y] = Element.EMPTY.getValue();
 				}
 			}
 		}
 	}
 
 	public boolean isObstacle(int x, int y) {
-		return map[x][y] != EMPTY;
+		return map[x][y] != Element.EMPTY.getValue();
+	}
+	
+	public Element getElement(int x, int y) {
+		return Element.fromValue(map[x][y]);
 	}
 }

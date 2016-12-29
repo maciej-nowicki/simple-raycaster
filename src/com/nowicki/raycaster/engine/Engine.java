@@ -12,28 +12,16 @@ public class Engine {
 
 	private int width;
 	private int height;
-	
-	private int backgroundColor;
-	private int colorA;
-	private int colorB;
 
 	public Engine(int widht, int height) {
 		this.width = widht;
 		this.height = height;
 	
-		backgroundColor = Color.BLACK.getRGB();
-		colorA = new Color(0, 200, 0).getRGB();
-		colorB = new Color(0, 180, 0).getRGB();
 	}
 
 	public void tick(Camera camera) {
-		if (Settings.floors != DrawMode.NONE) {
-			drawCeiling();
-			drawFloor();
-		} else {
-			Arrays.fill(buffer, backgroundColor);
-		}
 		
+		drawCeilingAndFloor();
 		
 		camera.update(level.getMap());
 		
@@ -110,11 +98,29 @@ public class Engine {
 			if (drawEnd >= height)
 				drawEnd = height - 1;
 			
-			int color = (side == 1) ? colorA : colorB;
+			Element element = level.getElement(mapX, mapY);
+			int color = (side == 1) ? element.getColor1AsRGB() : element.getColor2AsRGB();
+			
+			if (Settings.walls == DrawMode.SHADED) {
+				color = shade(color, perpWallDist, 20);
+			}
 			
 			drawLine(x, drawStart, drawEnd, color);
 		}
 			
+	}
+
+	private int shade(int color, double current, double max) {
+		Color c = new Color(color);
+		int r = normalize((c.getRed() * (max - current)) / max);
+		int g = normalize((c.getGreen() * (max - current)) / max);
+		int b = normalize((c.getBlue() * (max - current)) / max);
+		return new Color(r, g, b).getRGB();
+	}
+
+	private int normalize(double d) {
+		int value = (int) d;
+		return (value > 255) ? 255 : (value < 0) ? 0 : value;
 	}
 
 	private void drawLine(int x, int drawStart, int drawEnd, int color) {
@@ -122,16 +128,15 @@ public class Engine {
 			buffer[(y * width) + x] = color;
 		}
 	}
-
-	private void drawCeiling() {
-		for (int i = 0; i < buffer.length / 2; i++) {
-			buffer[i] = Color.GRAY.getRGB();
-		}
-	}
-
-	private void drawFloor() {
-		for (int i = buffer.length / 2; i < buffer.length; i++) {
-			buffer[i] = Color.LIGHT_GRAY.getRGB();
+	
+	private void drawCeilingAndFloor() {
+		switch (Settings.floors) {
+		case SOLID:
+			Arrays.fill(buffer, 0, buffer.length / 2, Settings.CEILING_COLOUR);
+			Arrays.fill(buffer, buffer.length / 2 + 1, buffer.length, Settings.FLOOR_COLOUR);
+			break;
+		default:
+			Arrays.fill(buffer, 0);
 		}
 	}
 
