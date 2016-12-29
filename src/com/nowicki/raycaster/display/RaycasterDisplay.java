@@ -4,11 +4,14 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
+import com.nowicki.raycaster.engine.Camera;
 import com.nowicki.raycaster.engine.Engine;
+import com.nowicki.raycaster.engine.Level;
+import com.nowicki.raycaster.engine.Settings;
 
 public class RaycasterDisplay extends JFrame implements Runnable {
 
@@ -25,21 +28,27 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	private Thread thread;
 	private BufferedImage frame;
 	
-	private boolean debug = true;
+	private Engine engine;
+	private Camera camera;
+	
 	private long fps;
 
-	public RaycasterDisplay(Engine engine) {
-		frame = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-		DataBuffer buffer = frame.getRaster().getDataBuffer();
-
-		System.out.println(buffer.getDataType());
+	public RaycasterDisplay() {
+		Level level = new Level();
+		engine = new Engine(WIDTH, HEIGHT);
+		engine.setLevel(level);
 		
-		engine.setBuffer(frame);
+		camera = new Camera(3, 10);
+		addKeyListener(camera);
+		
+		frame = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+		engine.setBuffer(((DataBufferInt)frame.getRaster().getDataBuffer()).getData());
 
 		setSize(WIDTH, HEIGHT);
 		setVisible(true);
 		setResizable(false);
 		setTitle(FRAME_TITLE);
+		setDefaultLookAndFeelDecorated(true);
 		setBackground(Color.black);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -60,22 +69,22 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 
 		while (running) {
 			
-			start = System.currentTimeMillis();
+			start = System.nanoTime();
 	
+			engine.tick(camera);
 			drawFrame();
 			
-			diff = System.currentTimeMillis() - start;
-			sleepTime = FRAME_TIME_MILIS - diff;
+			diff = System.nanoTime() - start;
+			sleepTime = FRAME_TIME_MILIS - (diff / 1000000);
 			if (sleepTime < 0) {
 				sleepTime = 0;
 			}
 			
-			if (debug) {
-				fps = (diff != 0) ? 1000 / diff : FPS_LIMIT;
+			if (Settings.debug) {
+				fps = (diff != 0) ? 1000000000 / diff : FPS_LIMIT;
 				if (fps > FPS_LIMIT) {
 					fps = FPS_LIMIT;
 				}
-				System.out.println("Frame time: "+diff+" SleepTime: "+sleepTime+" FPS: "+fps);
 			}
 			
 			try {
@@ -94,7 +103,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(frame, 0, 0, null);
-		if (debug) {
+		if (Settings.debug) {
 			drawDebugInfo(g);
 		}
 		bs.show();
@@ -103,7 +112,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	private void drawDebugInfo(Graphics g) {
 		String debugInfo = ((fps < 10) ? "0" : "") + fps + " fps";
 		g.setColor(Color.YELLOW);
-		g.drawString(debugInfo, 600, 20);
+		g.drawString(debugInfo, 600, 30);
 	}
 
 }
