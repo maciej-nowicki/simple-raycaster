@@ -110,7 +110,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		}
 		
 		Graphics g = bs.getDrawGraphics();
-		g.drawImage(frame, 0, 0, null);
+		g.drawImage(frame, 0, 0, getWidth(), getHeight(), null);
 		if (Settings.debug) {
 			drawDebugInfo(g);
 		}
@@ -121,6 +121,17 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		String debugInfo = ((fps < 10) ? "0" : "") + fps + " fps";
 		g.setColor(Color.YELLOW);
 		g.drawString(debugInfo, 600, 30);
+	}
+
+	public void toggleFullscreen() {
+		Settings.toggleFullscreen();
+		if (Settings.fullScreen == false) {
+			setSize(WIDTH, HEIGHT);
+		}
+		else {
+			setLocation(0, 0);
+			setSize((int)getToolkit().getScreenSize().getWidth(), (int)getToolkit().getScreenSize().getHeight());
+		}
 	}
 
 }

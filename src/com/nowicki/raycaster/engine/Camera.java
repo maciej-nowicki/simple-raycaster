@@ -7,7 +7,7 @@ import com.nowicki.raycaster.display.RaycasterDisplay;
 
 public class Camera implements KeyListener {
 
-	// position
+	// position on the map
 	protected double xPos;
 	protected double yPos;
 	
@@ -75,6 +75,9 @@ public class Camera implements KeyListener {
 			break;
 		case KeyEvent.VK_Q:
 			display.stop();
+			break;
+		case KeyEvent.VK_ENTER:
+			display.toggleFullscreen();
 			break;
 		}
 	}

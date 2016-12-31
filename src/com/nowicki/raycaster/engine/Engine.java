@@ -13,6 +13,8 @@ public class Engine {
 	private int width;
 	private int height;
 
+	private int frame;
+	
 	public Engine(int widht, int height) {
 		this.width = widht;
 		this.height = height;
@@ -26,7 +28,7 @@ public class Engine {
 		camera.update(level.getMap());
 		
 		for (int x=0; x<width; x++) {
-			double cameraX = 2 * x / (double)(width)  - 1;
+			double cameraX = 2 * x / (double)(width)  - 1; // in <-1, 1> coordinates
 			double rayPosX = camera.xPos;
 			double rayPosY = camera.yPos;
 			double rayDirX = camera.xDir + camera.xPlane * cameraX;
@@ -102,7 +104,7 @@ public class Engine {
 			int color = (side == 1) ? element.getColor1AsRGB() : element.getColor2AsRGB();
 			
 			if (Settings.walls == DrawMode.SHADED) {
-				color = shade(color, perpWallDist, 20);
+				color = fadeToBlack(color, perpWallDist, 20);
 			}
 			
 			drawLine(x, drawStart, drawEnd, color);
@@ -110,7 +112,7 @@ public class Engine {
 			
 	}
 
-	private int shade(int color, double current, double max) {
+	private int fadeToBlack(int color, double current, double max) {
 		Color c = new Color(color);
 		int r = normalize((c.getRed() * (max - current)) / max);
 		int g = normalize((c.getGreen() * (max - current)) / max);
@@ -118,9 +120,8 @@ public class Engine {
 		return new Color(r, g, b).getRGB();
 	}
 
-	private int normalize(double d) {
-		int value = (int) d;
-		return (value > 255) ? 255 : (value < 0) ? 0 : value;
+	private int normalize(double value) {
+		return (value > 255) ? 255 : (value < 0) ? 0 : (int) value;
 	}
 
 	private void drawLine(int x, int drawStart, int drawEnd, int color) {
@@ -134,6 +135,21 @@ public class Engine {
 		case SOLID:
 			Arrays.fill(buffer, 0, buffer.length / 2, Settings.CEILING_COLOUR);
 			Arrays.fill(buffer, buffer.length / 2 + 1, buffer.length, Settings.FLOOR_COLOUR);
+			break;
+		case SHADED:
+			int half = height/2;
+			for (int y=0; y<half; y++) {
+				int color = fadeToBlack(Settings.CEILING_COLOUR, y, half * 0.8);
+				for (int x=0; x<width; x++) {
+					buffer[y*width+x]=color;
+				}
+			}
+			for (int y=height-1; y>half; y--) {
+				int color = fadeToBlack(Settings.FLOOR_COLOUR, y, half * 0.8);
+				for (int x=0; x<width; x++) {
+					buffer[y*width+x]=color;
+				}
+			}
 			break;
 		default:
 			Arrays.fill(buffer, 0);
