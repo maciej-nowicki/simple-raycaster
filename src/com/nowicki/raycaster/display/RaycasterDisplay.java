@@ -5,13 +5,18 @@ import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JFrame;
 
 import com.nowicki.raycaster.engine.Camera;
+import com.nowicki.raycaster.engine.Element;
 import com.nowicki.raycaster.engine.Engine;
 import com.nowicki.raycaster.engine.Level;
 import com.nowicki.raycaster.engine.Settings;
+import com.nowicki.raycaster.engine.Texture;
 
 public class RaycasterDisplay extends JFrame implements Runnable {
 
@@ -30,13 +35,16 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	
 	private Engine engine;
 	private Camera camera;
+	private Map<Element, Texture> textures = new HashMap<>();
 	
 	private long fps;
 
-	public RaycasterDisplay() {
+	public RaycasterDisplay() throws IOException {
 		Level level = new Level("data/raycaster/level.txt");
 		engine = new Engine(WIDTH, HEIGHT);
 		engine.setLevel(level);
+
+		loadTextures();
 		
 		camera = new Camera(3, 10, this);
 		addKeyListener(camera);
@@ -58,6 +66,12 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		thread.start();
 	}
 	
+	private void loadTextures() throws IOException {
+		textures.put(Element.WALL_1, new Texture("data/raycaster/pics/greystone.png"));
+		textures.put(Element.WALL_2, new Texture("data/raycaster/pics/bluestone.png"));
+		textures.put(Element.WALL_3, new Texture("data/raycaster/pics/colorstone.png"));
+	}
+
 	@Override
 	public void run() {
 		running = true;

@@ -39,6 +39,9 @@ public class Settings {
 		if (walls == DrawMode.SOLID) {
 			walls = DrawMode.SHADED;
 		}
+		else if (walls == DrawMode.SHADED) {
+			walls = DrawMode.TEXTURED;
+		}	
 		else {
 			walls = DrawMode.SOLID;
 		}

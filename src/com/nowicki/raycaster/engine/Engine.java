@@ -101,13 +101,19 @@ public class Engine {
 				drawEnd = height - 1;
 			
 			Element element = level.getElement(mapX, mapY);
-			int color = (side == 1) ? element.getColor1AsRGB() : element.getColor2AsRGB();
 			
-			if (Settings.walls == DrawMode.SHADED) {
-				color = fadeToBlack(color, perpWallDist, 20);
+			if (Settings.walls == DrawMode.SHADED || Settings.walls == DrawMode.SOLID) {
+				int color = (side == 1) ? element.getColor1AsRGB() : element.getColor2AsRGB();
+				
+				if (Settings.walls == DrawMode.SHADED) {
+					color = fadeToBlack(color, perpWallDist, 20);
+				}
+				
+				drawLine(x, drawStart, drawEnd, color);
 			}
-			
-			drawLine(x, drawStart, drawEnd, color);
+			else if (Settings.walls == DrawMode.TEXTURED) {
+				
+			}
 		}
 			
 	}
