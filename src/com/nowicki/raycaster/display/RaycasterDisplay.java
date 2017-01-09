@@ -41,10 +41,10 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 
 	public RaycasterDisplay() throws IOException {
 		Level level = new Level("data/raycaster/level.txt");
-		engine = new Engine(WIDTH, HEIGHT);
-		engine.setLevel(level);
-
 		loadTextures();
+		
+		engine = new Engine(WIDTH, HEIGHT, textures);
+		engine.setLevel(level);
 		
 		camera = new Camera(3, 10, this);
 		addKeyListener(camera);

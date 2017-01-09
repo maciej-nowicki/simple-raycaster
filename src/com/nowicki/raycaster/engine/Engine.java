@@ -2,6 +2,7 @@ package com.nowicki.raycaster.engine;
 
 import java.awt.Color;
 import java.util.Arrays;
+import java.util.Map;
 
 import com.nowicki.raycaster.engine.Settings.DrawMode;
 
@@ -14,10 +15,12 @@ public class Engine {
 	private int height;
 
 	private int frame;
+	private Map<Element, Texture> textures;
 	
-	public Engine(int widht, int height) {
+	public Engine(int widht, int height, Map<Element, Texture> textures) {
 		this.width = widht;
 		this.height = height;
+		this.textures = textures;
 	
 	}
 
@@ -73,11 +76,11 @@ public class Engine {
 				if (sideDistX < sideDistY) {
 					sideDistX += deltaDistX;
 					mapX += stepX;
-					side = 0;
+					side = 0; // x axis wall
 				} else {
 					sideDistY += deltaDistY;
 					mapY += stepY;
-					side = 1;
+					side = 1; // y axis wall
 				}
 				// Check if ray has hit a wall
 				hit = level.isObstacle(mapX, mapY);
@@ -100,6 +103,7 @@ public class Engine {
 			if (drawEnd >= height)
 				drawEnd = height - 1;
 			
+			// element which was hit by the ray
 			Element element = level.getElement(mapX, mapY);
 			
 			if (Settings.walls == DrawMode.SHADED || Settings.walls == DrawMode.SOLID) {
@@ -112,7 +116,23 @@ public class Engine {
 				drawLine(x, drawStart, drawEnd, color);
 			}
 			else if (Settings.walls == DrawMode.TEXTURED) {
+				Texture t = textures.get(element);
 				
+				double wallX = (side == 0) ? (rayPosY + perpWallDist * rayDirY) : (rayPosX + perpWallDist * rayDirX);
+				wallX -= Math.floor(wallX);
+				
+				int texX = (int) (wallX * t.getSize());
+				if (side == 0 && rayDirX > 0)
+					texX = t.getSize() - texX - 1;
+				if (side == 1 && rayDirY < 0)
+					texX = t.getSize() - texX - 1;
+				
+				for (int y=drawStart; y<drawEnd; y++) {
+					int texY = 0;
+					texY = (((y*2 - height + lineHeight) << 6) / lineHeight) / 2;
+					int texel = t.getPixels()[texY * t.getSize() + texX];
+					buffer[y*width+x] = texel;
+				}
 			}
 		}
 			
