@@ -7,22 +7,22 @@ import com.nowicki.raycaster.display.RaycasterDisplay;
 
 public class Camera implements KeyListener {
 
-	// position on the map
+	// position on the map in double precision coordinates
 	protected double xPos;
 	protected double yPos;
 	
-	// view direction <-1, +1>
+	// view direction <-1, +1> x & y must be perpendicular
 	protected double xDir = -1;
 	protected double yDir = 0;
 	
-	// 
+	// camera plane
 	protected double xPlane = 0;
 	protected double yPlane = 0.66;
 
 	public final double MOVE_SPEED = 0.08;
 	public final double ROTATION_SPEED = .040;
 	
-	private boolean movingLeft, movingRight, movingForward, movingBackward;
+	private boolean rotatingLeft, rotatingRight, movingForward, movingBackward;
 	private RaycasterDisplay display;
 
 	public Camera(double xPos, double yPos, RaycasterDisplay display) {
@@ -35,10 +35,10 @@ public class Camera implements KeyListener {
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_LEFT:
-			movingLeft = true;
+			rotatingLeft = true;
 			break;
 		case KeyEvent.VK_RIGHT:
-			movingRight = true;
+			rotatingRight = true;
 			break;
 		case KeyEvent.VK_UP:
 			movingForward = true;
@@ -53,10 +53,10 @@ public class Camera implements KeyListener {
 	public void keyReleased(KeyEvent e) {
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_LEFT:
-			movingLeft = false;
+			rotatingLeft = false;
 			break;
 		case KeyEvent.VK_RIGHT:
-			movingRight = false;
+			rotatingRight = false;
 			break;
 		case KeyEvent.VK_UP:
 			movingForward = false;
@@ -89,7 +89,7 @@ public class Camera implements KeyListener {
 	public void update(int[][] map) {
 		
 		if (Settings.debug) {
-			System.out.println("Pos ("+xPos+","+yPos+") Dir ("+xDir+","+yDir+") l r u d "+movingLeft+" "+movingRight+" "+movingForward+" "+movingBackward);
+			System.out.println("Pos ("+xPos+","+yPos+") Dir ("+xDir+","+yDir+") l r u d "+rotatingLeft+" "+rotatingRight+" "+movingForward+" "+movingBackward);
 		}
 		
 		if (movingForward) {
@@ -104,22 +104,30 @@ public class Camera implements KeyListener {
 			if (map[(int) xPos][(int) (yPos - yDir * MOVE_SPEED)] == 0)
 				yPos -= yDir * MOVE_SPEED;
 		}
-		if (movingRight) {
-			double oldxDir = xDir;
-			xDir = xDir * Math.cos(-ROTATION_SPEED) - yDir * Math.sin(-ROTATION_SPEED);
-			yDir = oldxDir * Math.sin(-ROTATION_SPEED) + yDir * Math.cos(-ROTATION_SPEED);
-			double oldxPlane = xPlane;
-			xPlane = xPlane * Math.cos(-ROTATION_SPEED) - yPlane * Math.sin(-ROTATION_SPEED);
-			yPlane = oldxPlane * Math.sin(-ROTATION_SPEED) + yPlane * Math.cos(-ROTATION_SPEED);
+		
+		if (rotatingRight) {
+			rotateZ(-ROTATION_SPEED);
 		}
-		if (movingLeft) {
-			double oldxDir = xDir;
-			xDir = xDir * Math.cos(ROTATION_SPEED) - yDir * Math.sin(ROTATION_SPEED);
-			yDir = oldxDir * Math.sin(ROTATION_SPEED) + yDir * Math.cos(ROTATION_SPEED);
-			double oldxPlane = xPlane;
-			xPlane = xPlane * Math.cos(ROTATION_SPEED) - yPlane * Math.sin(ROTATION_SPEED);
-			yPlane = oldxPlane * Math.sin(ROTATION_SPEED) + yPlane * Math.cos(ROTATION_SPEED);
+		if (rotatingLeft) {
+			rotateZ(ROTATION_SPEED);
 		}
+	}
+	
+	/**
+	 * Multuply by rotation matrix
+	 * 
+	 * [ cos(angle) -sin(angle) ]
+	 * [ sin(angle)  cos(angle) ]
+	 * 
+	 * @param angle
+	 */
+	public void rotateZ(double angle) {
+		double oldxDir = xDir;
+		xDir = xDir * Math.cos(angle) - yDir * Math.sin(angle);
+		yDir = oldxDir * Math.sin(angle) + yDir * Math.cos(angle);
+		double oldxPlane = xPlane;
+		xPlane = xPlane * Math.cos(angle) - yPlane * Math.sin(angle);
+		yPlane = oldxPlane * Math.sin(angle) + yPlane * Math.cos(angle);
 	}
 
 }
