@@ -34,7 +34,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	private long fps;
 
 	public RaycasterDisplay() {
-		Level level = new Level("level.txt");
+		Level level = new Level("data/raycaster/level.txt");
 		engine = new Engine(WIDTH, HEIGHT);
 		engine.setLevel(level);
 		
