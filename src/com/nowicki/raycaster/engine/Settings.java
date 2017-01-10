@@ -5,7 +5,7 @@ import java.awt.Color;
 public class Settings {
 
 	enum DrawMode {
-		NONE, SOLID, SHADED, TEXTURED;
+		NONE, SOLID, SOLID_SHADED, TEXTURED, TEXTURED_SHADED;
 	}
 	
 	public static final int CEILING_COLOUR = new Color(80, 80, 80).getRGB();
@@ -14,7 +14,7 @@ public class Settings {
 	public static boolean debug = false;
 	public static boolean fullScreen = false;
 	public static DrawMode floors = DrawMode.SOLID;
-	public static DrawMode walls = DrawMode.SHADED;
+	public static DrawMode walls = DrawMode.SOLID_SHADED;
 	
 	public static void toggleFullscreen() {
 		fullScreen = !fullScreen;
@@ -25,7 +25,7 @@ public class Settings {
 			floors = DrawMode.SOLID;
 		}
 		else if (floors == DrawMode.SOLID) {
-			floors = DrawMode.SHADED;
+			floors = DrawMode.SOLID_SHADED;
 		}
 //		else if (floors == DrawMode.SHADED) {
 //			floors = DrawMode.TEXTURED;
@@ -37,10 +37,13 @@ public class Settings {
 	
 	public static void toggleWalls() {
 		if (walls == DrawMode.SOLID) {
-			walls = DrawMode.SHADED;
+			walls = DrawMode.SOLID_SHADED;
 		}
-		else if (walls == DrawMode.SHADED) {
+		else if (walls == DrawMode.SOLID_SHADED) {
 			walls = DrawMode.TEXTURED;
+		}
+		else if (walls == DrawMode.TEXTURED) {
+			walls = DrawMode.TEXTURED_SHADED;
 		}	
 		else {
 			walls = DrawMode.SOLID;

@@ -46,7 +46,7 @@ public class Engine {
 			// length of ray from one x or y-side to next x or y-side
 			double deltaDistX = Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
 			double deltaDistY = Math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
-			double perpWallDist;
+			double wallDistance;
 
 			// what direction to step in x or y-direction (either +1 or -1)
 			int stepX;
@@ -87,13 +87,13 @@ public class Engine {
 			}
 			
 			if (side == 0) {
-				perpWallDist = (mapX - rayPosX + (1 - stepX) / 2) / rayDirX;
+				wallDistance = (mapX - rayPosX + (1 - stepX) / 2) / rayDirX;
 			} else {
-				perpWallDist = (mapY - rayPosY + (1 - stepY) / 2) / rayDirY;
+				wallDistance = (mapY - rayPosY + (1 - stepY) / 2) / rayDirY;
 			}
 			
 			// Calculate height of line to draw on screen
-			int lineHeight = (int) (height / perpWallDist);
+			int lineHeight = (int) (height / wallDistance);
 
 			// calculate lowest and highest pixel to fill in current stripe
 			int drawStart = -lineHeight / 2 + height / 2;
@@ -106,19 +106,19 @@ public class Engine {
 			// element which was hit by the ray
 			Element element = level.getElement(mapX, mapY);
 			
-			if (Settings.walls == DrawMode.SHADED || Settings.walls == DrawMode.SOLID) {
-				int color = (side == 1) ? element.getColor1AsRGB() : element.getColor2AsRGB();
+			if (Settings.walls == DrawMode.SOLID_SHADED || Settings.walls == DrawMode.SOLID) {
+				int color = element.getColor(side);
 				
-				if (Settings.walls == DrawMode.SHADED) {
-					color = fadeToBlack(color, perpWallDist, 20);
+				if (Settings.walls == DrawMode.SOLID_SHADED) {
+					color = fadeToBlack(color, wallDistance, 20);
 				}
 				
 				drawLine(x, drawStart, drawEnd, color);
 			}
-			else if (Settings.walls == DrawMode.TEXTURED) {
+			else if (Settings.walls == DrawMode.TEXTURED || Settings.walls == DrawMode.TEXTURED_SHADED) {
 				Texture texture = textures.get(element);
 				
-				double wallX = (side == 0) ? (rayPosY + perpWallDist * rayDirY) : (rayPosX + perpWallDist * rayDirX);
+				double wallX = (side == 0) ? (rayPosY + wallDistance * rayDirY) : (rayPosX + wallDistance * rayDirX);
 				wallX -= Math.floor(wallX);
 				
 				int u = (int) (wallX * texture.getSize());
@@ -130,11 +130,16 @@ public class Engine {
 				for (int y=drawStart; y<drawEnd; y++) {
 					int v = (((y*2 - height + lineHeight) << 6) / lineHeight) / 2;
 					int texel = texture.getPixels()[v * texture.getSize() + u];
-					if (side == 1) {
+					if (side == 0) {
 						// TODO optimize: pre-generate darker texture version
 						texel = new Color(texel).darker().getRGB();
 						
 					}
+					
+					if (Settings.walls == DrawMode.TEXTURED_SHADED) {
+						texel = fadeToBlack(texel, wallDistance, 15);
+					}
+					
 					buffer[y*width+x] = texel;
 				}
 			}
@@ -155,8 +160,9 @@ public class Engine {
 	}
 
 	private void drawLine(int x, int drawStart, int drawEnd, int color) {
-		for (int y = drawStart; y < drawEnd; y++) {
-			buffer[(y * width) + x] = color;
+		// possible optimize: draw n (line height) pixels with step == screen width?
+		for (int y=drawStart; y<drawEnd; y++) {
+			buffer[y * width + x] = color;
 		}
 	}
 	
@@ -166,7 +172,7 @@ public class Engine {
 			Arrays.fill(buffer, 0, buffer.length / 2, Settings.CEILING_COLOUR);
 			Arrays.fill(buffer, buffer.length / 2 + 1, buffer.length, Settings.FLOOR_COLOUR);
 			break;
-		case SHADED:
+		case SOLID_SHADED:
 			int half = height/2;
 			for (int y=0; y<half; y++) {
 				int color = fadeToBlack(Settings.CEILING_COLOUR, y, half * 0.8);

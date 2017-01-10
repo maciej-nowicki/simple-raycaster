@@ -19,8 +19,15 @@ public class Camera implements KeyListener {
 	protected double xPlane = 0;
 	protected double yPlane = 0.66;
 
+	// default factors for camera movement
 	public final double MOVE_SPEED = 0.08;
-	public final double ROTATION_SPEED = .040;
+	public final double RUN_SPEED = MOVE_SPEED * 1.5;
+	public final double ROTATION_SPEED = 0.040;
+	
+	// actual camera movement factor (should be updated basing on frame time)
+	private double movingSpeed = MOVE_SPEED;
+	private double rotatingSpeed = ROTATION_SPEED;
+	
 	
 	private boolean rotatingLeft, rotatingRight, movingForward, movingBackward;
 	private RaycasterDisplay display;
@@ -46,6 +53,9 @@ public class Camera implements KeyListener {
 		case KeyEvent.VK_DOWN:
 			movingBackward = true;
 			break;
+		case KeyEvent.VK_SHIFT:
+			movingSpeed = RUN_SPEED;
+			break;
 		}
 	}
 
@@ -63,6 +73,9 @@ public class Camera implements KeyListener {
 			break;
 		case KeyEvent.VK_DOWN:
 			movingBackward = false;
+			break;
+		case KeyEvent.VK_SHIFT:
+			movingSpeed = MOVE_SPEED;
 			break;
 		case KeyEvent.VK_D:
 			Settings.debug = !Settings.debug;
@@ -93,23 +106,23 @@ public class Camera implements KeyListener {
 		}
 		
 		if (movingForward) {
-			if (map[(int) (xPos + xDir * MOVE_SPEED)][(int) yPos] == 0)
-				xPos += xDir * MOVE_SPEED;
-			if (map[(int) xPos][(int) (yPos + yDir * MOVE_SPEED)] == 0)
-				yPos += yDir * MOVE_SPEED;
+			if (map[(int) (xPos + xDir * movingSpeed)][(int) yPos] == 0)
+				xPos += xDir * movingSpeed;
+			if (map[(int) xPos][(int) (yPos + yDir * movingSpeed)] == 0)
+				yPos += yDir * movingSpeed;
 		}
 		if (movingBackward) {
-			if (map[(int) (xPos - xDir * MOVE_SPEED)][(int) yPos] == 0)
-				xPos -= xDir * MOVE_SPEED;
-			if (map[(int) xPos][(int) (yPos - yDir * MOVE_SPEED)] == 0)
-				yPos -= yDir * MOVE_SPEED;
+			if (map[(int) (xPos - xDir * movingSpeed)][(int) yPos] == 0)
+				xPos -= xDir * movingSpeed;
+			if (map[(int) xPos][(int) (yPos - yDir * movingSpeed)] == 0)
+				yPos -= yDir * movingSpeed;
 		}
 		
 		if (rotatingRight) {
-			rotateZ(-ROTATION_SPEED);
+			rotateZ(-rotatingSpeed);
 		}
 		if (rotatingLeft) {
-			rotateZ(ROTATION_SPEED);
+			rotateZ(rotatingSpeed);
 		}
 	}
 	
