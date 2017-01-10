@@ -70,6 +70,8 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		textures.put(Element.WALL_1, new Texture("data/raycaster/pics/greystone.png"));
 		textures.put(Element.WALL_2, new Texture("data/raycaster/pics/bluestone.png"));
 		textures.put(Element.WALL_3, new Texture("data/raycaster/pics/colorstone.png"));
+		textures.put(Element.WALL_WOOD, new Texture("data/raycaster/pics/wood.png"));
+		textures.put(Element.BARREL, new Texture("data/raycaster/pics/barrel.png"));
 	}
 
 	@Override

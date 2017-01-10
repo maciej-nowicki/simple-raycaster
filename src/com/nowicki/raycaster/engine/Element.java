@@ -4,7 +4,7 @@ import java.awt.Color;
 
 public enum Element {
 
-	EMPTY(0, null), WALL_1(1, new Color(0, 200, 0)), WALL_2(2, new Color(0, 0, 200)), WALL_3(3, new Color(57, 140, 66));
+	EMPTY(0, null), WALL_1(1, new Color(0, 200, 0)), WALL_2(2, new Color(0, 0, 200)), WALL_3(3, new Color(57, 140, 66)), WALL_WOOD(4, Color.YELLOW), BARREL(9, null);
 
 	private int value;
 	private int color1;

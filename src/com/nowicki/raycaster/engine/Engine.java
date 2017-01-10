@@ -116,21 +116,25 @@ public class Engine {
 				drawLine(x, drawStart, drawEnd, color);
 			}
 			else if (Settings.walls == DrawMode.TEXTURED) {
-				Texture t = textures.get(element);
+				Texture texture = textures.get(element);
 				
 				double wallX = (side == 0) ? (rayPosY + perpWallDist * rayDirY) : (rayPosX + perpWallDist * rayDirX);
 				wallX -= Math.floor(wallX);
 				
-				int texX = (int) (wallX * t.getSize());
+				int u = (int) (wallX * texture.getSize());
 				if (side == 0 && rayDirX > 0)
-					texX = t.getSize() - texX - 1;
+					u = texture.getSize() - u - 1;
 				if (side == 1 && rayDirY < 0)
-					texX = t.getSize() - texX - 1;
+					u = texture.getSize() - u - 1;
 				
 				for (int y=drawStart; y<drawEnd; y++) {
-					int texY = 0;
-					texY = (((y*2 - height + lineHeight) << 6) / lineHeight) / 2;
-					int texel = t.getPixels()[texY * t.getSize() + texX];
+					int v = (((y*2 - height + lineHeight) << 6) / lineHeight) / 2;
+					int texel = texture.getPixels()[v * texture.getSize() + u];
+					if (side == 1) {
+						// TODO optimize: pre-generate darker texture version
+						texel = new Color(texel).darker().getRGB();
+						
+					}
 					buffer[y*width+x] = texel;
 				}
 			}
