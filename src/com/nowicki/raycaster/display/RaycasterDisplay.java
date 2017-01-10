@@ -91,7 +91,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 			
 			start = System.nanoTime();
 	
-			engine.tick(camera);
+			engine.tick(camera, 1);
 			drawFrame();
 			
 			diff = System.nanoTime() - start;

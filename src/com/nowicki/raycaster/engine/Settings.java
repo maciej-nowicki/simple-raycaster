@@ -11,13 +11,20 @@ public class Settings {
 	public static final int CEILING_COLOUR = new Color(80, 80, 80).getRGB();
 	public static final int FLOOR_COLOUR = new Color(50, 50, 50).getRGB();
 	
+	public static final double WALKING_EFFECT_SCALE = 0.015;
+	
 	public static boolean debug = false;
 	public static boolean fullScreen = false;
+	public static boolean walkingEffect = false;
 	public static DrawMode floors = DrawMode.SOLID;
 	public static DrawMode walls = DrawMode.SOLID_SHADED;
 	
 	public static void toggleFullscreen() {
 		fullScreen = !fullScreen;
+	}
+	
+	public static void toggleWalkingEffect() {
+		walkingEffect = !walkingEffect;
 	}
 	
 	public static void toggleFloor() {

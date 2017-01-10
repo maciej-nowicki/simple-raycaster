@@ -37,6 +37,10 @@ public class Camera implements KeyListener {
 		this.yPos = yPos;
 		this.display = display;
 	}
+	
+	public boolean isPlayerMoving() {
+		return (movingBackward || movingForward);
+	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -86,6 +90,9 @@ public class Camera implements KeyListener {
 		case KeyEvent.VK_W:
 			Settings.toggleWalls();
 			break;
+		case KeyEvent.VK_S:
+			Settings.toggleWalkingEffect();
+			break;
 		case KeyEvent.VK_Q:
 			display.stop();
 			break;
@@ -99,30 +106,33 @@ public class Camera implements KeyListener {
 	public void keyTyped(KeyEvent e) {
 	}
 
-	public void update(int[][] map) {
+	public void update(int[][] map, int frameSkip) {
 		
 		if (Settings.debug) {
 			System.out.println("Pos ("+xPos+","+yPos+") Dir ("+xDir+","+yDir+") l r u d "+rotatingLeft+" "+rotatingRight+" "+movingForward+" "+movingBackward);
 		}
 		
+		double movementAmount = movingSpeed * frameSkip;
+		double rotationAmount = rotatingSpeed * frameSkip;
+		
 		if (movingForward) {
-			if (map[(int) (xPos + xDir * movingSpeed)][(int) yPos] == 0)
-				xPos += xDir * movingSpeed;
-			if (map[(int) xPos][(int) (yPos + yDir * movingSpeed)] == 0)
-				yPos += yDir * movingSpeed;
+			if (map[(int) (xPos + xDir * movementAmount)][(int) yPos] == 0)
+				xPos += xDir * movementAmount;
+			if (map[(int) xPos][(int) (yPos + yDir * movementAmount)] == 0)
+				yPos += yDir * movementAmount;
 		}
 		if (movingBackward) {
-			if (map[(int) (xPos - xDir * movingSpeed)][(int) yPos] == 0)
-				xPos -= xDir * movingSpeed;
-			if (map[(int) xPos][(int) (yPos - yDir * movingSpeed)] == 0)
-				yPos -= yDir * movingSpeed;
+			if (map[(int) (xPos - xDir * movementAmount)][(int) yPos] == 0)
+				xPos -= xDir * movementAmount;
+			if (map[(int) xPos][(int) (yPos - yDir * movementAmount)] == 0)
+				yPos -= yDir * movementAmount;
 		}
 		
 		if (rotatingRight) {
-			rotateZ(-rotatingSpeed);
+			rotateZ(-rotationAmount);
 		}
 		if (rotatingLeft) {
-			rotateZ(rotatingSpeed);
+			rotateZ(rotationAmount);
 		}
 	}
 	

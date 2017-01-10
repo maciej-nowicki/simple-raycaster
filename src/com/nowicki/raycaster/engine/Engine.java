@@ -14,7 +14,8 @@ public class Engine {
 	private int width;
 	private int height;
 
-	private int frame;
+	private double movement = 0;
+	private int verticalDisplace = 0;
 	private Map<Element, Texture> textures;
 	
 	public Engine(int widht, int height, Map<Element, Texture> textures) {
@@ -24,11 +25,18 @@ public class Engine {
 	
 	}
 
-	public void tick(Camera camera) {
+	public void tick(Camera camera, int frameSkip) {
 		
 		drawCeilingAndFloor();
 		
-		camera.update(level.getMap());
+		camera.update(level.getMap(), frameSkip);
+		
+		if (Settings.walkingEffect) {
+			if (camera.isPlayerMoving()) {
+				movement += 0.2;
+				verticalDisplace = (int) (height * Settings.WALKING_EFFECT_SCALE * Math.sin(movement));
+			}
+		}
 		
 		for (int x=0; x<width; x++) {
 			double cameraX = 2 * x / (double)(width)  - 1; // in <-1, 1> coordinates
@@ -113,6 +121,11 @@ public class Engine {
 					color = fadeToBlack(color, wallDistance, 20);
 				}
 				
+				if (Settings.walkingEffect) {
+					drawStart = clipVertically(drawStart + verticalDisplace);
+					drawEnd = clipVertically(drawEnd + verticalDisplace);
+				}
+				
 				drawLine(x, drawStart, drawEnd, color);
 			}
 			else if (Settings.walls == DrawMode.TEXTURED || Settings.walls == DrawMode.TEXTURED_SHADED) {
@@ -133,14 +146,18 @@ public class Engine {
 					if (side == 0) {
 						// TODO optimize: pre-generate darker texture version
 						texel = new Color(texel).darker().getRGB();
-						
 					}
 					
 					if (Settings.walls == DrawMode.TEXTURED_SHADED) {
 						texel = fadeToBlack(texel, wallDistance, 15);
 					}
 					
-					buffer[y*width+x] = texel;
+					int y1 = y;
+					if (Settings.walkingEffect) {
+						y1 = clipVertically(y1 + verticalDisplace);
+					}
+					
+					buffer[y1*width+x] = texel;
 				}
 			}
 		}
@@ -157,6 +174,10 @@ public class Engine {
 
 	private int normalize(double value) {
 		return (value > 255) ? 255 : (value < 0) ? 0 : (int) value;
+	}
+	
+	private int clipVertically(int y) {
+		return (y >= height) ? height-1 : (y < 0) ? 0 : y;
 	}
 
 	private void drawLine(int x, int drawStart, int drawEnd, int color) {
