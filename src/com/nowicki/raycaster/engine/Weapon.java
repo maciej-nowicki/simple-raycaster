@@ -12,13 +12,13 @@ public class Weapon {
 	private int [] frameSequence;
 	private int [] framesWidth;
 	private int frameHeight;
-	private int currentFrame;
+	private int f;
 
 	public Weapon(String filename, int[] frameSequence, int... framesEnds) throws IOException {
 		this.pixels = new int[framesEnds.length][];
 		this.framesWidth = new int[framesEnds.length];
 		this.frameSequence = frameSequence;
-		this.currentFrame = frameSequence[0];
+		this.f = 0;
 
 		BufferedImage image = ImageIO.read(new File(filename));
 		this.frameHeight = image.getHeight();
@@ -34,11 +34,12 @@ public class Weapon {
 	}
 	
 	public int[] getFrame() {
-		return pixels[frameSequence[currentFrame]];
+		System.out.println("returnning gun frame " + frameSequence[f] + " [" + f +"]");
+		return pixels[frameSequence[f]];
 	}
 	
 	public int getFrameWidth() {
-		return framesWidth[frameSequence[currentFrame]];
+		return framesWidth[frameSequence[f]];
 	}
 
 	public int getFrameHeight() {
@@ -46,6 +47,7 @@ public class Weapon {
 	}
 	
 	public void nextFrame() {
-		currentFrame = (currentFrame != frameSequence.length - 1) ? currentFrame++ : 0;
+		System.out.println("next frame!");
+		f = (f != frameSequence.length - 1) ? ++f : 0;
 	}
 }

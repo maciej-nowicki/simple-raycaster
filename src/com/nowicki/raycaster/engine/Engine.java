@@ -20,6 +20,7 @@ public class Engine {
 	private int gunHorizontalDisplace = 0;
 	private Map<Element, Texture> textures;
 	private Weapon weapon;
+	private long frame = 0;
 	
 	public Engine(int widht, int height, Map<Element, Texture> textures, Weapon weapon) {
 		this.width = widht;
@@ -170,6 +171,8 @@ public class Engine {
 		if (Settings.showWeapon) {
 			drawWeapon(frameTime);
 		}
+		
+		frame++;
 			
 	}
 
@@ -224,6 +227,9 @@ public class Engine {
 	
 	private void drawWeapon(double frameSkip) {
 		// TODO optimize!
+		if (frame % 3 == 0) {
+			weapon.nextFrame();
+		}
 		int gunImageWidth = weapon.getFrameWidth();
 		int gunImageHeight = weapon.getFrameHeight();
 		int[] gunPixels = weapon.getFrame();
