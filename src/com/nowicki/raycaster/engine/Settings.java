@@ -16,6 +16,7 @@ public class Settings {
 	public static boolean debug = false;
 	public static boolean fullScreen = false;
 	public static boolean walkingEffect = false;
+	public static boolean showWeapon = true;
 	public static DrawMode floors = DrawMode.SOLID;
 	public static DrawMode walls = DrawMode.SOLID_SHADED;
 	
@@ -25,6 +26,10 @@ public class Settings {
 	
 	public static void toggleWalkingEffect() {
 		walkingEffect = !walkingEffect;
+	}
+	
+	public static void toggleShowWeapon() {
+		showWeapon = !showWeapon;
 	}
 	
 	public static void toggleFloor() {

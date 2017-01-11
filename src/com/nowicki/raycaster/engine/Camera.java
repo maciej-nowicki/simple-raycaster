@@ -90,6 +90,9 @@ public class Camera implements KeyListener {
 		case KeyEvent.VK_W:
 			Settings.toggleWalls();
 			break;
+		case KeyEvent.VK_G:
+			Settings.toggleShowWeapon();
+			break;
 		case KeyEvent.VK_S:
 			Settings.toggleWalkingEffect();
 			break;

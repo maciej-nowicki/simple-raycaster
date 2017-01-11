@@ -7,7 +7,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JFrame;
 
@@ -17,6 +19,7 @@ import com.nowicki.raycaster.engine.Engine;
 import com.nowicki.raycaster.engine.Level;
 import com.nowicki.raycaster.engine.Settings;
 import com.nowicki.raycaster.engine.Texture;
+import com.nowicki.raycaster.engine.Weapon;
 
 public class RaycasterDisplay extends JFrame implements Runnable {
 
@@ -36,14 +39,16 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	private Engine engine;
 	private Camera camera;
 	private Map<Element, Texture> textures = new HashMap<>();
+	private Weapon weapon;
 	
 	private long fps;
 
 	public RaycasterDisplay() throws IOException {
 		Level level = new Level("data/raycaster/level.txt");
 		loadTextures();
+		loadWeapons();
 		
-		engine = new Engine(WIDTH, HEIGHT, textures);
+		engine = new Engine(WIDTH, HEIGHT, textures, weapon);
 		engine.setLevel(level);
 		
 		camera = new Camera(3, 10, this);
@@ -72,6 +77,10 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		textures.put(Element.WALL_3, new Texture("data/raycaster/pics/colorstone.png"));
 		textures.put(Element.WALL_WOOD, new Texture("data/raycaster/pics/wood.png"));
 		textures.put(Element.BARREL, new Texture("data/raycaster/pics/barrel.png"));
+	}
+	
+	private void loadWeapons() throws IOException {
+		weapon = new Weapon("data/raycaster/pics/shotgun.png", new int[] {0, 1, 2, 3, 4, 5, 4, 3}, new int[] {87, 172, 256, 386, 480, 596});
 	}
 
 	@Override

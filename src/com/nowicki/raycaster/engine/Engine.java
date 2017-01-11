@@ -16,25 +16,30 @@ public class Engine {
 
 	private double movement = 0;
 	private int verticalDisplace = 0;
+	private int gunVerticalDisplace = 0;
+	private int gunHorizontalDisplace = 0;
 	private Map<Element, Texture> textures;
+	private Weapon weapon;
 	
-	public Engine(int widht, int height, Map<Element, Texture> textures) {
+	public Engine(int widht, int height, Map<Element, Texture> textures, Weapon weapon) {
 		this.width = widht;
 		this.height = height;
 		this.textures = textures;
-	
+		this.weapon = weapon;
 	}
 
 	public void tick(Camera camera, double frameTime) {
 		
-		drawCeilingAndFloor();
-		
 		camera.update(level.getMap(), frameTime);
+
+		drawCeilingAndFloor();
 		
 		if (Settings.walkingEffect) {
 			if (camera.isPlayerMoving()) {
 				movement += 0.2;
 				verticalDisplace = (int) (height * Settings.WALKING_EFFECT_SCALE * Math.sin(movement));
+				gunVerticalDisplace = (int) (4 * Math.sin(movement));
+				gunHorizontalDisplace = (int) (8 * Math.cos(movement));
 			}
 		}
 		
@@ -161,6 +166,10 @@ public class Engine {
 				}
 			}
 		}
+		
+		if (Settings.showWeapon) {
+			drawWeapon(frameTime);
+		}
 			
 	}
 
@@ -210,6 +219,29 @@ public class Engine {
 			break;
 		default:
 			Arrays.fill(buffer, 0);
+		}
+	}
+	
+	private void drawWeapon(double frameSkip) {
+		// TODO optimize!
+		int gunImageWidth = weapon.getFrameWidth();
+		int gunImageHeight = weapon.getFrameHeight();
+		int[] gunPixels = weapon.getFrame();
+		
+		int startX = ((width - gunImageWidth) / 2) + gunHorizontalDisplace; 
+		int startY = (height - gunImageHeight + 5) + gunVerticalDisplace;
+		int u = 0;
+		int v = 0;
+		for (int y=startY; y<height; y++) {
+			for (int x=startX; x<(startX+gunImageWidth); x++) {
+				int pixel = gunPixels[v*gunImageWidth+u];
+				if (pixel != 65535) {
+					buffer[y*width+x] = pixel;
+				}
+				u++;
+			}
+			u = 0;
+			v++;
 		}
 	}
 
