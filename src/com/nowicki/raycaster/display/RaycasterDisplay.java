@@ -86,18 +86,21 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	
 	public void runDemo() {
 		long start, diff, sleepTime;
+		double frameTime = 1.0;
 
 		while (running) {
 			
 			start = System.nanoTime();
 	
-			engine.tick(camera, 1);
+			engine.tick(camera, frameTime);
 			drawFrame();
 			
 			diff = System.nanoTime() - start;
 			sleepTime = FRAME_TIME_MILIS - (diff / 1000000);
+			frameTime = 1.0;
 			if (sleepTime < 0) {
 				sleepTime = 0;
+				frameTime = (diff / 1000000) / FRAME_TIME_MILIS;
 			}
 			
 			if (Settings.debug) {

@@ -106,14 +106,14 @@ public class Camera implements KeyListener {
 	public void keyTyped(KeyEvent e) {
 	}
 
-	public void update(int[][] map, int frameSkip) {
+	public void update(int[][] map, double frameTime) {
 		
 		if (Settings.debug) {
 			System.out.println("Pos ("+xPos+","+yPos+") Dir ("+xDir+","+yDir+") l r u d "+rotatingLeft+" "+rotatingRight+" "+movingForward+" "+movingBackward);
 		}
 		
-		double movementAmount = movingSpeed * frameSkip;
-		double rotationAmount = rotatingSpeed * frameSkip;
+		double movementAmount = movingSpeed * frameTime;
+		double rotationAmount = rotatingSpeed * frameTime;
 		
 		if (movingForward) {
 			if (map[(int) (xPos + xDir * movementAmount)][(int) yPos] == 0)

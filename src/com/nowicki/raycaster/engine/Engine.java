@@ -25,11 +25,11 @@ public class Engine {
 	
 	}
 
-	public void tick(Camera camera, int frameSkip) {
+	public void tick(Camera camera, double frameTime) {
 		
 		drawCeilingAndFloor();
 		
-		camera.update(level.getMap(), frameSkip);
+		camera.update(level.getMap(), frameTime);
 		
 		if (Settings.walkingEffect) {
 			if (camera.isPlayerMoving()) {
@@ -39,7 +39,7 @@ public class Engine {
 		}
 		
 		for (int x=0; x<width; x++) {
-			double cameraX = 2 * x / (double)(width)  - 1; // in <-1, 1> coordinates
+			double cameraX = 2 * (x) / (double)(width)  - 1; // in <-1, 1> coordinates
 			double rayPosX = camera.xPos;
 			double rayPosY = camera.yPos;
 			double rayDirX = camera.xDir + camera.xPlane * cameraX;
