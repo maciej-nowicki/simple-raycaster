@@ -34,14 +34,18 @@ public class Weapon {
 	}
 	
 	public int[] getFrame() {
-		return pixels[currentFrame];
+		return pixels[frameSequence[currentFrame]];
 	}
 	
 	public int getFrameWidth() {
-		return framesWidth[currentFrame];
+		return framesWidth[frameSequence[currentFrame]];
 	}
 
 	public int getFrameHeight() {
 		return frameHeight;
+	}
+	
+	public void nextFrame() {
+		currentFrame = (currentFrame != frameSequence.length - 1) ? currentFrame++ : 0;
 	}
 }

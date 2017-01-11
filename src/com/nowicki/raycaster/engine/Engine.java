@@ -38,7 +38,7 @@ public class Engine {
 			if (camera.isPlayerMoving()) {
 				movement += 0.2;
 				verticalDisplace = (int) (height * Settings.WALKING_EFFECT_SCALE * Math.sin(movement));
-				gunVerticalDisplace = (int) (4 * Math.sin(movement));
+				gunVerticalDisplace = (int) (2 * Math.sin(movement));
 				gunHorizontalDisplace = (int) (8 * Math.cos(movement));
 			}
 		}
@@ -229,13 +229,14 @@ public class Engine {
 		int[] gunPixels = weapon.getFrame();
 		
 		int startX = ((width - gunImageWidth) / 2) + gunHorizontalDisplace; 
-		int startY = (height - gunImageHeight + 5) + gunVerticalDisplace;
+		int startY = (height - gunImageHeight + 10) + gunVerticalDisplace;
 		int u = 0;
 		int v = 0;
+		
 		for (int y=startY; y<height; y++) {
 			for (int x=startX; x<(startX+gunImageWidth); x++) {
 				int pixel = gunPixels[v*gunImageWidth+u];
-				if (pixel != 65535) {
+				if (pixel != -16711681) { // TODO brute-force transparency
 					buffer[y*width+x] = pixel;
 				}
 				u++;
