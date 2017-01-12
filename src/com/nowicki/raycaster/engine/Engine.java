@@ -137,19 +137,20 @@ public class Engine {
 			}
 			else if (Settings.walls == DrawMode.TEXTURED || Settings.walls == DrawMode.TEXTURED_SHADED) {
 				Texture texture = textures.get(element);
+				int texW = texture.getSize();
 				
 				double wallX = (side == 0) ? (rayPosY + wallDistance * rayDirY) : (rayPosX + wallDistance * rayDirX);
 				wallX -= Math.floor(wallX);
 				
-				int u = (int) (wallX * texture.getSize());
+				int u = (int) (wallX * texW);
 				if (side == 0 && rayDirX > 0)
-					u = texture.getSize() - u - 1;
+					u = texW - u - 1;
 				if (side == 1 && rayDirY < 0)
-					u = texture.getSize() - u - 1;
+					u = texW - u - 1;
 				
 				for (int y=drawStart; y<drawEnd; y++) {
-					int v = (((y*2 - height + lineHeight) << 6) / lineHeight) / 2;
-					int texel = texture.getPixels()[v * texture.getSize() + u];
+					int v = (((y*2 - height + lineHeight) * texW) / lineHeight) / 2;
+					int texel = texture.getPixels()[v * texW + u];
 					if (side == 0) {
 						// TODO optimize: pre-generate darker texture version
 						texel = new Color(texel).darker().getRGB();
