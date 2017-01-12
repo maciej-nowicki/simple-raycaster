@@ -39,9 +39,12 @@ public class Settings {
 		else if (floors == DrawMode.SOLID) {
 			floors = DrawMode.SOLID_SHADED;
 		}
-//		else if (floors == DrawMode.SHADED) {
-//			floors = DrawMode.TEXTURED;
-//		}
+		else if (floors == DrawMode.SOLID_SHADED) {
+			floors = DrawMode.TEXTURED;
+		}
+		else if (floors == DrawMode.TEXTURED) {
+			floors = DrawMode.TEXTURED_SHADED;
+		}	
 		else {
 			floors = DrawMode.NONE;
 		}
@@ -50,6 +53,7 @@ public class Settings {
 	public static void toggleWalls() {
 		if (walls == DrawMode.SOLID) {
 			walls = DrawMode.SOLID_SHADED;
+			floors = DrawMode.SOLID;
 		}
 		else if (walls == DrawMode.SOLID_SHADED) {
 			walls = DrawMode.TEXTURED;
@@ -59,6 +63,7 @@ public class Settings {
 		}	
 		else {
 			walls = DrawMode.SOLID;
+			floors = DrawMode.SOLID;
 		}
 	}
 }

@@ -107,7 +107,6 @@ public class Engine {
 				wallDistance = (mapY - rayPosY + (1 - stepY) / 2) / rayDirY;
 			}
 			
-			// Calculate height of line to draw on screen
 			int lineHeight = (int) (height / wallDistance);
 
 			// calculate lowest and highest pixel to fill in current stripe
@@ -120,6 +119,8 @@ public class Engine {
 			
 			// element which was hit by the ray
 			Element element = level.getElement(mapX, mapY);
+			
+			double wallX = 0.0;
 			
 			if (Settings.walls == DrawMode.SOLID_SHADED || Settings.walls == DrawMode.SOLID) {
 				int color = element.getColor(side);
@@ -139,7 +140,7 @@ public class Engine {
 				Texture texture = textures.get(element);
 				int texW = texture.getSize();
 				
-				double wallX = (side == 0) ? (rayPosY + wallDistance * rayDirY) : (rayPosX + wallDistance * rayDirX);
+				wallX = (side == 0) ? (rayPosY + wallDistance * rayDirY) : (rayPosX + wallDistance * rayDirX);
 				wallX -= Math.floor(wallX);
 				
 				int u = (int) (wallX * texW);
@@ -167,6 +168,63 @@ public class Engine {
 					
 					buffer[y1*width+x] = texel;
 				}
+			
+				if (Settings.floors == DrawMode.TEXTURED || Settings.floors == DrawMode.TEXTURED_SHADED) {
+					double floorXWall, floorYWall;
+					if (side == 0 && rayDirX > 0) {
+						floorXWall = mapX;
+						floorYWall = mapY + wallX;
+					} else if (side == 0 && rayDirX < 0) {
+						floorXWall = mapX + 1.0;
+						floorYWall = mapY + wallX;
+					} else if (side == 1 && rayDirY > 0) {
+						floorXWall = mapX + wallX;
+						floorYWall = mapY;
+					} else {
+						floorXWall = mapX + wallX;
+						floorYWall = mapY + 1.0;
+					}
+					
+					double distPlayer, currentDist;
+		
+					distPlayer = 0.0;
+					
+					Texture floorTexture = textures.get(Element.FLOOR);
+					Texture ceilingTexture = textures.get(Element.CEILING);
+					int texWidth = floorTexture.getSize();
+					
+					for (int y=drawEnd+1; y<height; y++) {
+					  currentDist = height / (2.0 * y - height);
+		
+				        double weight = (currentDist - distPlayer) / (wallDistance - distPlayer);
+		
+				        double currentFloorX = weight * floorXWall + (1.0 - weight) * camera.xPos;
+				        double currentFloorY = weight * floorYWall + (1.0 - weight) * camera.yPos;
+		
+				        int floorTexX, floorTexY;
+				        floorTexX = (int) (currentFloorX * texWidth) % texWidth;
+				        floorTexY = (int) (currentFloorY * texWidth) % texWidth;
+		
+				        int floorTexel = floorTexture.getPixels()[texWidth * floorTexY + floorTexX];
+				        int ceilingTexel = ceilingTexture.getPixels()[texWidth * floorTexY + floorTexX]; 
+				        
+				    	if (Settings.floors == DrawMode.TEXTURED_SHADED) {
+				    		floorTexel = fadeToBlack(floorTexel, height-y, height/2);
+				    		ceilingTexel = fadeToBlack(ceilingTexel, height-y, height/2);
+				    	}
+				    	
+				    	int y1 = y;
+				    	int y2 = y;
+				    	if (Settings.walkingEffect) {
+							y1 = clipVertically(y1 + verticalDisplace);
+							y2 = clipVertically(y2 - verticalDisplace);
+				    	}
+				        
+				        buffer[y1*width+x] = floorTexel; 
+				        buffer[(height-y2)*width+x] = ceilingTexel;
+					}
+				}
+			
 			}
 		}
 		
