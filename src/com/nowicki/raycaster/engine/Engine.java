@@ -51,6 +51,7 @@ public class Engine {
 			double rayDirX = camera.xDir + camera.xPlane * cameraX;
 			double rayDirY = camera.yDir + camera.yPlane * cameraX;
 		
+			// where are we on the map?
 			int mapX = (int) camera.xPos;
 			int mapY = (int) camera.yPos;
 			
@@ -227,7 +228,7 @@ public class Engine {
 	
 	private void drawWeapon(double frameSkip) {
 		// TODO optimize!
-		if (frame % 3 == 0) {
+		if (weapon.isShooting() && frame % 3 == 0) {
 			weapon.nextFrame();
 		}
 		int gunImageWidth = weapon.getFrameWidth();
@@ -258,6 +259,10 @@ public class Engine {
 
 	public void setLevel(Level level) {
 		this.level = level;
+	}
+
+	public Weapon getWeapon() {
+		return weapon;
 	}
 
 }

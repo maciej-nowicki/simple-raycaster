@@ -51,7 +51,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		engine = new Engine(WIDTH, HEIGHT, textures, weapon);
 		engine.setLevel(level);
 		
-		camera = new Camera(3, 10, this);
+		camera = new Camera(3, 10, engine, this);
 		addKeyListener(camera);
 		
 		frame = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);

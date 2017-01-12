@@ -13,6 +13,8 @@ public class Weapon {
 	private int [] framesWidth;
 	private int frameHeight;
 	private int f;
+	
+	private boolean shooting = false;
 
 	public Weapon(String filename, int[] frameSequence, int... framesEnds) throws IOException {
 		this.pixels = new int[framesEnds.length][];
@@ -34,7 +36,6 @@ public class Weapon {
 	}
 	
 	public int[] getFrame() {
-		System.out.println("returnning gun frame " + frameSequence[f] + " [" + f +"]");
 		return pixels[frameSequence[f]];
 	}
 	
@@ -47,7 +48,22 @@ public class Weapon {
 	}
 	
 	public void nextFrame() {
-		System.out.println("next frame!");
-		f = (f != frameSequence.length - 1) ? ++f : 0;
+		if (f != frameSequence.length -1) {
+			f++;
+		}
+		else {
+			f = 0;
+			shooting = false;
+		}
 	}
+
+	public boolean isShooting() {
+		return shooting;
+	}
+
+	public void setShooting(boolean shooting) {
+		this.shooting = shooting;
+	}
+	
+	
 }

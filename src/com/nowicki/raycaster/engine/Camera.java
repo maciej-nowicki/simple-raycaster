@@ -5,6 +5,8 @@ import java.awt.event.KeyListener;
 
 import com.nowicki.raycaster.display.RaycasterDisplay;
 
+// TODO separate camera class and controller (key listener) responsibilites
+
 public class Camera implements KeyListener {
 
 	// position on the map in double precision coordinates
@@ -28,13 +30,15 @@ public class Camera implements KeyListener {
 	private double movingSpeed = MOVE_SPEED;
 	private double rotatingSpeed = ROTATION_SPEED;
 	
-	
 	private boolean rotatingLeft, rotatingRight, movingForward, movingBackward;
+	
 	private RaycasterDisplay display;
+	private Engine engine;
 
-	public Camera(double xPos, double yPos, RaycasterDisplay display) {
+	public Camera(double xPos, double yPos, Engine engine, RaycasterDisplay display) {
 		this.xPos = xPos;
 		this.yPos = yPos;
+		this.engine = engine;
 		this.display = display;
 	}
 	
@@ -80,6 +84,9 @@ public class Camera implements KeyListener {
 			break;
 		case KeyEvent.VK_SHIFT:
 			movingSpeed = MOVE_SPEED;
+			break;
+		case KeyEvent.VK_CONTROL:
+			engine.getWeapon().setShooting(true);
 			break;
 		case KeyEvent.VK_D:
 			Settings.debug = !Settings.debug;
