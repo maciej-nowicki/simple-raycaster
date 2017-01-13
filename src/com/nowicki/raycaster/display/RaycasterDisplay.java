@@ -28,7 +28,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	public static final String FRAME_TITLE = "Raycaster demo";
 	
 	public static final int WIDTH = 640;
-	public static final int HEIGHT = 480;
+	public static final int HEIGHT = 400;
 	public static final int FPS_LIMIT = 50;
 	public static final long FRAME_TIME_MILIS = 1000 / FPS_LIMIT;
 

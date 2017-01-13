@@ -17,6 +17,10 @@ public class Texture {
 		this.size = image.getWidth();
 	}
 	
+	public int getPixel(int u, int v) {
+		return pixels[v * size + u];
+	}
+	
 	public int [] getPixels() {
 		return pixels;
 	}

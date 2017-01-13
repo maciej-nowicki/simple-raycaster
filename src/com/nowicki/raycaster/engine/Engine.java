@@ -137,21 +137,24 @@ public class Engine {
 				drawLine(x, drawStart, drawEnd, color);
 			}
 			else if (Settings.walls == DrawMode.TEXTURED || Settings.walls == DrawMode.TEXTURED_SHADED) {
-				Texture texture = textures.get(element);
-				int texW = texture.getSize();
+				Texture wallTexture = textures.get(element);
+				int textureWidth = wallTexture.getSize();
+				int u, v;
 				
 				wallX = (side == 0) ? (rayPosY + wallDistance * rayDirY) : (rayPosX + wallDistance * rayDirX);
 				wallX -= Math.floor(wallX);
 				
-				int u = (int) (wallX * texW);
-				if (side == 0 && rayDirX > 0)
-					u = texW - u - 1;
-				if (side == 1 && rayDirY < 0)
-					u = texW - u - 1;
+				u = (int) (wallX * textureWidth);
+				if (side == 0 && rayDirX > 0) {
+					u = textureWidth - u - 1;
+				}
+				if (side == 1 && rayDirY < 0) {
+					u = textureWidth - u - 1;
+				}
 				
 				for (int y=drawStart; y<drawEnd; y++) {
-					int v = (((y*2 - height + lineHeight) * texW) / lineHeight) / 2;
-					int texel = texture.getPixels()[v * texW + u];
+					v = (((y*2 - height + lineHeight) * textureWidth) / lineHeight) / 2;
+					int texel = wallTexture.getPixel(u, v);
 					if (side == 0) {
 						// TODO optimize: pre-generate darker texture version
 						texel = new Color(texel).darker().getRGB();
@@ -191,7 +194,7 @@ public class Engine {
 					
 					Texture floorTexture = textures.get(Element.FLOOR);
 					Texture ceilingTexture = textures.get(Element.CEILING);
-					int texWidth = floorTexture.getSize();
+					textureWidth = floorTexture.getSize();
 					
 					for (int y=drawEnd+1; y<height; y++) {
 					  currentDist = height / (2.0 * y - height);
@@ -201,12 +204,11 @@ public class Engine {
 				        double currentFloorX = weight * floorXWall + (1.0 - weight) * camera.xPos;
 				        double currentFloorY = weight * floorYWall + (1.0 - weight) * camera.yPos;
 		
-				        int floorTexX, floorTexY;
-				        floorTexX = (int) (currentFloorX * texWidth) % texWidth;
-				        floorTexY = (int) (currentFloorY * texWidth) % texWidth;
+				        u = (int) (currentFloorX * textureWidth) % textureWidth;
+				        v = (int) (currentFloorY * textureWidth) % textureWidth;
 		
-				        int floorTexel = floorTexture.getPixels()[texWidth * floorTexY + floorTexX];
-				        int ceilingTexel = ceilingTexture.getPixels()[texWidth * floorTexY + floorTexX]; 
+				        int floorTexel = floorTexture.getPixel(u, v);
+				        int ceilingTexel = ceilingTexture.getPixel(u, v); 
 				        
 				    	if (Settings.floors == DrawMode.TEXTURED_SHADED) {
 				    		floorTexel = fadeToBlack(floorTexel, height-y, height/2);
