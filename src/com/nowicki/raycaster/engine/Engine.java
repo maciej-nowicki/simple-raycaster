@@ -33,7 +33,15 @@ public class Engine {
 		
 		camera.update(level.getMap(), frameTime);
 
-		drawCeilingAndFloor();
+		// look up/down amount same for every pixel
+		int yShear = (int) (height * camera.yShear);
+		
+		// TODO - bugfix - odd shearing amount causes texture mapping to break (revisit)
+		if (yShear % 2 != 0) {
+			yShear += (yShear < 0) ? - 1 : 1;
+		}
+
+		drawCeilingAndFloor(yShear);
 		
 		if (Settings.walkingEffect) {
 			if (camera.isPlayerMoving()) {
@@ -108,14 +116,14 @@ public class Engine {
 			}
 			
 			int lineHeight = (int) (height / wallDistance);
-
+			
 			// calculate lowest and highest pixel to fill in current stripe
-			int drawStart = -lineHeight / 2 + height / 2;
-			if (drawStart < 0)
-				drawStart = 0;
-			int drawEnd = lineHeight / 2 + height / 2;
-			if (drawEnd >= height)
-				drawEnd = height - 1;
+			// consider look up/down (yShear) in calculation
+			int drawStart = -lineHeight / 2 + (height + yShear) / 2;
+			int drawEnd = lineHeight / 2 + (height + yShear) / 2;
+			
+			drawStart = clipVertically(drawStart);
+			drawEnd = clipVertically(drawEnd);
 			
 			// element which was hit by the ray
 			Element element = level.getElement(mapX, mapY);
@@ -153,7 +161,7 @@ public class Engine {
 				}
 				
 				for (int y=drawStart; y<drawEnd; y++) {
-					v = (((y*2 - height + lineHeight) * textureWidth) / lineHeight) / 2;
+					v = (((y*2 - (height + yShear) + lineHeight) * textureWidth) / lineHeight) / 2;
 					int texel = wallTexture.getPixel(u, v);
 					if (side == 0) {
 						// TODO optimize: pre-generate darker texture version
@@ -197,7 +205,7 @@ public class Engine {
 					textureWidth = floorTexture.getSize();
 					
 					for (int y=drawEnd+1; y<height; y++) {
-					  currentDist = height / (2.0 * y - height);
+						currentDist = (height+yShear) / (2.0 * y - (height + yShear));
 		
 				        double weight = (currentDist - distPlayer) / (wallDistance - distPlayer);
 		
@@ -211,8 +219,8 @@ public class Engine {
 				        int ceilingTexel = ceilingTexture.getPixel(u, v); 
 				        
 				    	if (Settings.floors == DrawMode.TEXTURED_SHADED) {
-				    		floorTexel = fadeToBlack(floorTexel, height-y, height/2);
-				    		ceilingTexel = fadeToBlack(ceilingTexel, height-y, height/2);
+				    		floorTexel = fadeToBlack(floorTexel, (height + yShear)-y, (height + yShear)/2);
+				    		ceilingTexel = fadeToBlack(ceilingTexel, (height + yShear)-y, (height + yShear)/2);
 				    	}
 				    	
 				    	int y1 = y;
@@ -223,7 +231,7 @@ public class Engine {
 				    	}
 				        
 				        buffer[y1*width+x] = floorTexel; 
-				        buffer[(height-y2)*width+x] = ceilingTexel;
+				        buffer[clipVertically((height+yShear)-y2)*width+x] = ceilingTexel;
 					}
 				}
 			
@@ -261,14 +269,16 @@ public class Engine {
 		}
 	}
 	
-	private void drawCeilingAndFloor() {
+	private void drawCeilingAndFloor(int yShear) {
+		int half;
 		switch (Settings.floors) {
 		case SOLID:
-			Arrays.fill(buffer, 0, buffer.length / 2, Settings.CEILING_COLOUR);
-			Arrays.fill(buffer, buffer.length / 2 + 1, buffer.length, Settings.FLOOR_COLOUR);
+			half = width * (height + yShear) / 2;
+			Arrays.fill(buffer, 0, half, Settings.CEILING_COLOUR);
+			Arrays.fill(buffer, half + 1, buffer.length, Settings.FLOOR_COLOUR);
 			break;
 		case SOLID_SHADED:
-			int half = height/2;
+			half = (height+yShear)/2;
 			for (int y=0; y<half; y++) {
 				int color = fadeToBlack(Settings.CEILING_COLOUR, y, half * 0.8);
 				for (int x=0; x<width; x++) {

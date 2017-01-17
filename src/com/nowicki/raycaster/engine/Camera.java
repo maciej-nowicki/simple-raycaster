@@ -20,17 +20,25 @@ public class Camera implements KeyListener {
 	// camera plane
 	protected double xPlane = 0;
 	protected double yPlane = 0.66;
+	
+	// y-shearing pixels 
+	protected double yShear = 0;
 
 	// default factors for camera movement
 	public final double MOVE_SPEED = 0.08;
 	public final double RUN_SPEED = MOVE_SPEED * 1.5;
 	public final double ROTATION_SPEED = 0.040;
+	public final double LOOK_UP_DOWN_SPEED = 0.040;
+	public final double LOOK_UP_LIMIT = 0.3;
+	public final double LOOK_UP_DOWN = 0.6;
 	
 	// actual camera movement factor (should be updated basing on frame time)
 	private double movingSpeed = MOVE_SPEED;
 	private double rotatingSpeed = ROTATION_SPEED;
+	private double lookingUpDownSpeed = LOOK_UP_DOWN_SPEED;
 	
 	private boolean rotatingLeft, rotatingRight, movingForward, movingBackward;
+	private boolean lookingUp, lookingDown;
 	
 	private RaycasterDisplay display;
 	private Engine engine;
@@ -64,6 +72,12 @@ public class Camera implements KeyListener {
 		case KeyEvent.VK_SHIFT:
 			movingSpeed = RUN_SPEED;
 			break;
+		case KeyEvent.VK_Q:
+			lookingUp = true;
+			break;
+		case KeyEvent.VK_Z:
+			lookingDown = true;
+			break;
 		}
 	}
 
@@ -85,6 +99,15 @@ public class Camera implements KeyListener {
 		case KeyEvent.VK_SHIFT:
 			movingSpeed = MOVE_SPEED;
 			break;
+		case KeyEvent.VK_Q:
+			lookingUp = false;
+			break;
+		case KeyEvent.VK_Z:
+			lookingDown = false;
+			break;
+		case KeyEvent.VK_A:
+			centerLook();
+			break;
 		case KeyEvent.VK_CONTROL:
 			engine.getWeapon().setShooting(true);
 			break;
@@ -103,7 +126,7 @@ public class Camera implements KeyListener {
 		case KeyEvent.VK_S:
 			Settings.toggleWalkingEffect();
 			break;
-		case KeyEvent.VK_Q:
+		case KeyEvent.VK_ESCAPE:
 			display.stop();
 			break;
 		case KeyEvent.VK_ENTER:
@@ -124,6 +147,7 @@ public class Camera implements KeyListener {
 		
 		double movementAmount = movingSpeed * frameTime;
 		double rotationAmount = rotatingSpeed * frameTime;
+		double upDownAmout = lookingUpDownSpeed * frameTime;
 		
 		if (movingForward) {
 			if (map[(int) (xPos + xDir * movementAmount)][(int) yPos] == 0)
@@ -141,8 +165,19 @@ public class Camera implements KeyListener {
 		if (rotatingRight) {
 			rotateZ(-rotationAmount);
 		}
-		if (rotatingLeft) {
+		else if (rotatingLeft) {
 			rotateZ(rotationAmount);
+		}
+		
+		if (lookingUp) {
+			if (yShear < LOOK_UP_LIMIT) {
+				yShear += upDownAmout;
+			}
+		}
+		else if (lookingDown) {
+			if (-yShear < LOOK_UP_DOWN) {
+				yShear -= upDownAmout;
+			}
 		}
 	}
 	
@@ -161,6 +196,10 @@ public class Camera implements KeyListener {
 		double oldxPlane = xPlane;
 		xPlane = xPlane * Math.cos(angle) - yPlane * Math.sin(angle);
 		yPlane = oldxPlane * Math.sin(angle) + yPlane * Math.cos(angle);
+	}
+	
+	private void centerLook() {
+		yShear = 0;
 	}
 
 }
