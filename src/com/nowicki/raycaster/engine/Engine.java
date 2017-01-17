@@ -31,7 +31,7 @@ public class Engine {
 
 	public void tick(Camera camera, double frameTime) {
 		
-		camera.update(level.getMap(), frameTime);
+		camera.update(level, frameTime);
 
 		// look up/down amount same for every pixel
 		int yShear = (int) (height * camera.yShear);

@@ -9,7 +9,7 @@ public class Level {
 	public static int DEFAULT_MAP_WIDTH = 20;
 	public static int DEFAULT_MAP_HEIGHT = 20;
 	
-	private int[][] map;
+	private Element[][] map;
 	
 	public Level() {
 		initDummyMap();
@@ -22,10 +22,10 @@ public class Level {
 			for (int j=0; j<lines.length; j++) {
 				String [] entries = lines[j].split(",");
 				if (map == null) {
-					map = new int[entries.length][lines.length];
+					map = new Element[entries.length][lines.length];
 				}
 				for (int i=0; i<entries.length; i++) {
-					map[i][j] = Integer.parseInt(entries[i]);
+					map[i][j] = Element.fromValue(Integer.parseInt(entries[i]));
 				}
 			}
 		} catch (IOException e) {
@@ -34,29 +34,29 @@ public class Level {
 		}
 	}
 	
-	public int[][] getMap() {
+	public Element[][] getMap() {
 		return map;
 	}
 	
 	private void initDummyMap() {
-		map = new int[DEFAULT_MAP_WIDTH][DEFAULT_MAP_HEIGHT];
+		map = new Element[DEFAULT_MAP_WIDTH][DEFAULT_MAP_HEIGHT];
 		for (int y=0; y<DEFAULT_MAP_HEIGHT; y++) {
 			for (int x=0; x<DEFAULT_MAP_WIDTH; x++) {
 				if (x == 0 || y == 0 || x == DEFAULT_MAP_WIDTH-1 || y == DEFAULT_MAP_HEIGHT - 1) {
-					map[x][y] = Element.WALL_1.getValue();
+					map[x][y] = Element.WALL_1;
 				}
 				else {
-					map[x][y] = Element.EMPTY.getValue();
+					map[x][y] = Element.EMPTY;
 				}
 			}
 		}
 	}
 
 	public boolean isObstacle(int x, int y) {
-		return map[x][y] != Element.EMPTY.getValue();
+		return map[x][y] != Element.EMPTY;
 	}
 	
 	public Element getElement(int x, int y) {
-		return Element.fromValue(map[x][y]);
+		return map[x][y];
 	}
 }

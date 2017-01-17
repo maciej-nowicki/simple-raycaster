@@ -27,7 +27,7 @@ public enum Element {
 	public int getColor(int side) {
 		return (side == 1) ? color : colorDarker;
 	}
-
+	
 	public static Element fromValue(int value) {
 		for (Element element : values()) {
 			if (value == element.value) {

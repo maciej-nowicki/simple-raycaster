@@ -139,7 +139,7 @@ public class Camera implements KeyListener {
 	public void keyTyped(KeyEvent e) {
 	}
 
-	public void update(int[][] map, double frameTime) {
+	public void update(Level level, double frameTime) {
 		
 		if (Settings.debug) {
 			System.out.println("Pos ("+xPos+","+yPos+") Dir ("+xDir+","+yDir+") l r u d "+rotatingLeft+" "+rotatingRight+" "+movingForward+" "+movingBackward);
@@ -150,16 +150,20 @@ public class Camera implements KeyListener {
 		double upDownAmout = lookingUpDownSpeed * frameTime;
 		
 		if (movingForward) {
-			if (map[(int) (xPos + xDir * movementAmount)][(int) yPos] == 0)
+			if (!level.isObstacle((int) (xPos + xDir * movementAmount), (int) yPos)) {
 				xPos += xDir * movementAmount;
-			if (map[(int) xPos][(int) (yPos + yDir * movementAmount)] == 0)
+			}
+			if (!level.isObstacle((int) xPos, (int) (yPos + yDir * movementAmount))) {
 				yPos += yDir * movementAmount;
+			}
 		}
 		if (movingBackward) {
-			if (map[(int) (xPos - xDir * movementAmount)][(int) yPos] == 0)
+			if (!level.isObstacle((int) (xPos - xDir * movementAmount), (int) yPos)) {
 				xPos -= xDir * movementAmount;
-			if (map[(int) xPos][(int) (yPos - yDir * movementAmount)] == 0)
+			}
+			if (!level.isObstacle((int) xPos, (int) (yPos - yDir * movementAmount))) {
 				yPos -= yDir * movementAmount;
+		}
 		}
 		
 		if (rotatingRight) {
