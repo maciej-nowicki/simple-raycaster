@@ -196,9 +196,7 @@ public class Engine {
 						floorYWall = mapY + 1.0;
 					}
 					
-					double distPlayer, currentDist;
-		
-					distPlayer = 0.0;
+					double  currentDist;
 					
 					Texture floorTexture = textures.get(Element.FLOOR);
 					Texture ceilingTexture = textures.get(Element.CEILING);
@@ -207,7 +205,7 @@ public class Engine {
 					for (int y=drawEnd+1; y<height; y++) {
 						currentDist = (height+yShear) / (2.0 * y - (height + yShear));
 		
-				        double weight = (currentDist - distPlayer) / (wallDistance - distPlayer);
+				        double weight = currentDist / (wallDistance + (wallDistance * camera.yShear));
 		
 				        double currentFloorX = weight * floorXWall + (1.0 - weight) * camera.xPos;
 				        double currentFloorY = weight * floorYWall + (1.0 - weight) * camera.yPos;
