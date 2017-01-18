@@ -17,8 +17,8 @@ public class Settings {
 	public static boolean fullScreen = false;
 	public static boolean walkingEffect = false;
 	public static boolean showWeapon = true;
-	public static DrawMode floors = DrawMode.SOLID;
-	public static DrawMode walls = DrawMode.SOLID_SHADED;
+	public static DrawMode floors = DrawMode.TEXTURED;
+	public static DrawMode walls = DrawMode.TEXTURED;
 	
 	public static void toggleFullscreen() {
 		fullScreen = !fullScreen;

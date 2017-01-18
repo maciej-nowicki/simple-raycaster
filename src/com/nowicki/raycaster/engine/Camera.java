@@ -21,7 +21,7 @@ public class Camera implements KeyListener {
 	protected double xPlane = 0;
 	protected double yPlane = 0.66;
 	
-	// y-shearing pixels 
+	// y-shearing (look up-down) amount 
 	protected double yShear = 0;
 
 	// default factors for camera movement
@@ -29,14 +29,16 @@ public class Camera implements KeyListener {
 	public final double RUN_SPEED = MOVE_SPEED * 1.5;
 	public final double ROTATION_SPEED = 0.040;
 	public final double LOOK_UP_DOWN_SPEED = 0.040;
-	public final double LOOK_UP_LIMIT = 0.3;
-	public final double LOOK_UP_DOWN = 0.6;
+	public final double LOOK_UP_LIMIT = 0.4;
+	public final double LOOK_DOWN_LIMIT = 0.8;
 	
 	// actual camera movement factor (should be updated basing on frame time)
 	private double movingSpeed = MOVE_SPEED;
 	private double rotatingSpeed = ROTATION_SPEED;
 	private double lookingUpDownSpeed = LOOK_UP_DOWN_SPEED;
 	
+	// states as boolean - some are mutually exclusive, but some might happen at once
+	// impl as separate boolean values is the easiest one
 	private boolean rotatingLeft, rotatingRight, movingForward, movingBackward;
 	private boolean lookingUp, lookingDown;
 	
@@ -141,10 +143,6 @@ public class Camera implements KeyListener {
 
 	public void update(Level level, double frameTime) {
 		
-		if (Settings.debug) {
-			System.out.println("Pos ("+xPos+","+yPos+") Dir ("+xDir+","+yDir+") l r u d "+rotatingLeft+" "+rotatingRight+" "+movingForward+" "+movingBackward);
-		}
-		
 		double movementAmount = movingSpeed * frameTime;
 		double rotationAmount = rotatingSpeed * frameTime;
 		double upDownAmout = lookingUpDownSpeed * frameTime;
@@ -179,7 +177,7 @@ public class Camera implements KeyListener {
 			}
 		}
 		else if (lookingDown) {
-			if (-yShear < LOOK_UP_DOWN) {
+			if (-yShear < LOOK_DOWN_LIMIT) {
 				yShear -= upDownAmout;
 			}
 		}
@@ -193,7 +191,7 @@ public class Camera implements KeyListener {
 	 * 
 	 * @param angle
 	 */
-	public void rotateZ(double angle) {
+	private void rotateZ(double angle) {
 		double oldxDir = xDir;
 		xDir = xDir * Math.cos(angle) - yDir * Math.sin(angle);
 		yDir = oldxDir * Math.sin(angle) + yDir * Math.cos(angle);

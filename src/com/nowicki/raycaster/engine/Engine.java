@@ -202,11 +202,11 @@ public class Engine {
 					Texture ceilingTexture = textures.get(Element.CEILING);
 					textureWidth = floorTexture.getSize();
 					
-					for (int y=drawEnd+1; y<height; y++) {
+					for (int y=drawEnd+1; y<height+Math.abs(yShear); y++) {
 						currentDist = (height+yShear) / (2.0 * y - (height + yShear));
 		
 				        double weight = currentDist / (wallDistance + (wallDistance * camera.yShear));
-		
+				        
 				        double currentFloorX = weight * floorXWall + (1.0 - weight) * camera.xPos;
 				        double currentFloorY = weight * floorYWall + (1.0 - weight) * camera.yPos;
 		
@@ -221,15 +221,15 @@ public class Engine {
 				    		ceilingTexel = fadeToBlack(ceilingTexel, (height + yShear)-y, (height + yShear)/2);
 				    	}
 				    	
-				    	int y1 = y;
-				    	int y2 = y;
-				    	if (Settings.walkingEffect) {
-							y1 = clipVertically(y1 + verticalDisplace);
-							y2 = clipVertically(y2 - verticalDisplace);
-				    	}
+				    	int y1 = y + verticalDisplace;
+				    	int y2 = y - verticalDisplace;
 				        
-				        buffer[y1*width+x] = floorTexel; 
-				        buffer[clipVertically((height+yShear)-y2)*width+x] = ceilingTexel;
+				    	if (y1 < height) {
+				    		buffer[y1*width+x] = floorTexel; 
+				    	}
+				        if ((height+yShear-y2) >= 0) {
+				        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
+				        }
 					}
 				}
 			
