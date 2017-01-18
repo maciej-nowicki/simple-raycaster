@@ -1,15 +1,16 @@
 package com.nowicki.raycaster.display;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.JFrame;
 
@@ -31,6 +32,8 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	public static final int HEIGHT = 400;
 	public static final int FPS_LIMIT = 50;
 	public static final long FRAME_TIME_MILIS = 1000 / FPS_LIMIT;
+	
+	private GraphicsDevice screen;
 
 	private boolean running;
 	private Thread thread;
@@ -41,9 +44,13 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	private Map<Element, Texture> textures = new HashMap<>();
 	private Weapon weapon;
 	
+	private int windowBarHeight;
 	private long fps;
 
-	public RaycasterDisplay() throws IOException {
+	public RaycasterDisplay() throws IOException {		
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		screen = ge.getDefaultScreenDevice();
+		
 		Level level = new Level("data/raycaster/level.txt");
 		loadTextures();
 		loadWeapons();
@@ -65,6 +72,8 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		setBackground(Color.black);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		windowBarHeight = (int) (HEIGHT - getContentPane().getSize().getHeight());
 		
 		thread = new Thread(this);
 		thread.setDaemon(true);
@@ -93,6 +102,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	
 	public void stop() {
 		running = false;
+		screen.setFullScreenWindow(null);
 	}
 	
 	public void runDemo() {
@@ -119,7 +129,6 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 				if (fps > FPS_LIMIT) {
 					fps = FPS_LIMIT;
 				}
-				
 				System.out.println("frameTime " + diff + " ns, sleepTime " + sleepTime +" ms , FPS "+fps);
 			}
 			
@@ -150,17 +159,17 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	private void drawDebugInfo(Graphics g) {
 		String debugInfo = ((fps < 10) ? "0" : "") + fps + " fps";
 		g.setColor(Color.YELLOW);
-		g.drawString(debugInfo, 600, 30);
+		g.drawString(debugInfo, 2, windowBarHeight +g.getFontMetrics().getHeight());
 	}
 
 	public void toggleFullscreen() {
 		Settings.toggleFullscreen();
 		if (Settings.fullScreen == false) {
+			screen.setFullScreenWindow(null);
 			setSize(WIDTH, HEIGHT);
 		}
 		else {
-			setLocation(0, 0);
-			setSize((int)getToolkit().getScreenSize().getWidth(), (int)getToolkit().getScreenSize().getHeight());
+			screen.setFullScreenWindow(this);
 		}
 	}
 
