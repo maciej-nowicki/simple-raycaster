@@ -205,7 +205,7 @@ public class Engine {
 					for (int y=drawEnd+1; y<height+Math.abs(yShear); y++) {
 						currentDist = (height+yShear) / (2.0 * y - (height + yShear));
 		
-				        double weight = currentDist / (wallDistance + (wallDistance * camera.yShear));
+				        double weight = Math.abs(currentDist / (wallDistance + (wallDistance * camera.yShear)));
 				        
 				        double currentFloorX = weight * floorXWall + (1.0 - weight) * camera.xPos;
 				        double currentFloorY = weight * floorYWall + (1.0 - weight) * camera.yPos;
@@ -227,7 +227,8 @@ public class Engine {
 				    	if (y1 < height) {
 				    		buffer[y1*width+x] = floorTexel; 
 				    	}
-				        if ((height+yShear-y2) >= 0) {
+				    	// second condition -> don't draw over walls
+				        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace)) {
 				        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
 				        }
 					}
