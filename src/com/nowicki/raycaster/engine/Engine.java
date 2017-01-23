@@ -1,6 +1,7 @@
 package com.nowicki.raycaster.engine;
 
 import java.awt.Color;
+import java.nio.file.Watchable;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -264,7 +265,7 @@ public class Engine {
 			
 			    // center point of the sprite on screen and its height
 			    int spriteScreenX = (int) ((width / 2) * (1 + sprite.xTransformed  / sprite.yTransformed));
-				
+			    
 			    // assume sprites are squares, so only one dimension is needed to be calculated
 			    // but store in separate vars for the future
 			    int spriteHeight = (int) Math.abs(height / sprite.yTransformed);
@@ -286,7 +287,10 @@ public class Engine {
 				    		int v = (((y * 256 - height * 128 + spriteHeight * 128) * texture.getSize()) / spriteHeight) / 256;
 				    		int pixel = texture.getPixel(u, v);
 				    		if (!new Color(pixel).equals(Color.BLACK)) {
-				    			buffer[y*width+x] = pixel;
+				    			
+				    			int y1 = clipVertically(y + verticalDisplace);
+				    			
+				    			buffer[y1*width+x] = pixel;
 				    		}
 				    	}
 			    	}
