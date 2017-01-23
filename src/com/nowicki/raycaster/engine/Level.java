@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Level {
 
@@ -18,7 +19,7 @@ public class Level {
 		initDummyMap();
 	}
 
-	public Level(String filename) {
+	public Level(String filename, Map<Element, Texture> textures) {
 		try {
 			String content = new String(Files.readAllBytes(Paths.get(filename)));
 			String [] lines = content.split("\n");
@@ -35,6 +36,11 @@ public class Level {
 			e.printStackTrace();
 			initDummyMap();
 		}
+		
+		// TODO read sprites from file
+		sprites.add(new Sprite(1.5, 1.5, textures.get(Element.BARREL)));
+		sprites.add(new Sprite(2.5, 1.5, textures.get(Element.BARREL)));
+		sprites.add(new Sprite(3.5, 1.5, textures.get(Element.BARREL)));
 	}
 	
 	private void initDummyMap() {
@@ -57,6 +63,10 @@ public class Level {
 	
 	public List<Sprite> getSprites() {
 		return sprites;
+	}
+	
+	public boolean isWall(int x, int y) {
+		return map[x][y].isWall();
 	}
 
 	public boolean isObstacle(int x, int y) {

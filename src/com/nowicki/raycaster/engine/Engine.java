@@ -106,7 +106,7 @@ public class Engine {
 					side = 1; // y axis wall
 				}
 				// Check if ray has hit a wall
-				hit = level.isObstacle(mapX, mapY);
+				hit = level.isWall(mapX, mapY);
 			}
 			
 			if (side == 0) {
@@ -256,6 +256,41 @@ public class Engine {
 				// distance relative to the camera
 				double spriteX = sprite.xPosition - camera.xPos;
 				double spriteY = sprite.yPosition - camera.yPos;
+				
+				// transform - multiply by inversion of camera matrix. TODO - move to sprite class?
+				double invDet = 1.0 / (camera.xPlane * camera.yDir - camera.xDir * camera.yPlane);
+			    sprite.xTransformed = invDet * (camera.yDir * spriteX - camera.xDir * spriteY);
+			    sprite.yTransformed = invDet * (-camera.yPlane * spriteX + camera.xPlane * spriteY);
+			
+			    // center point of the sprite on screen and its height
+			    int spriteScreenX = (int) ((width / 2) * (1 + sprite.xTransformed  / sprite.yTransformed));
+				
+			    // assume sprites are squares, so only one dimension is needed to be calculated
+			    // but store in separate vars for the future
+			    int spriteHeight = (int) Math.abs(height / sprite.yTransformed);
+			    int spriteWidth = spriteHeight;
+				
+			    int drawStartY = clipVertically(-spriteHeight / 2 + height / 2);
+			    int drawEndY = clipVertically(spriteHeight / 2 + height / 2);
+			    int drawStartX = clipHorizontally(-spriteWidth / 2 + spriteScreenX);
+			    int drawEndX = clipHorizontally(spriteWidth / 2 + spriteScreenX);
+
+			    Texture texture = sprite.getTexture();
+			    
+			    // draw the sprite
+			    for (int x=drawStartX; x<drawEndX; x++) {
+			    	// if is in front of the camera (yTransformed > 0) but before the wall
+			    	if (sprite.yTransformed > 0 && sprite.yTransformed < zBuffer[x]) {
+				    	for (int y=drawStartY; y<drawEndY; y++) {
+				    		int u = (256 * (x - (-spriteWidth / 2 + spriteScreenX)) * texture.getSize() / spriteWidth) / 256;
+				    		int v = (((y * 256 - height * 128 + spriteHeight * 128) * texture.getSize()) / spriteHeight) / 256;
+				    		int pixel = texture.getPixel(u, v);
+				    		if (!new Color(pixel).equals(Color.BLACK)) {
+				    			buffer[y*width+x] = pixel;
+				    		}
+				    	}
+			    	}
+			    }
 			}
 		}
 		
@@ -277,6 +312,10 @@ public class Engine {
 
 	private int normalize(double value) {
 		return (value > 255) ? 255 : (value < 0) ? 0 : (int) value;
+	}
+	
+	private int clipHorizontally(int x) {
+		return (x >= width) ? width-1 : (x < 0) ? 0 : x;
 	}
 	
 	private int clipVertically(int y) {

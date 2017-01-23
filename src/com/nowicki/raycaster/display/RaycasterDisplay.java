@@ -51,9 +51,9 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		screen = ge.getDefaultScreenDevice();
 		
-		Level level = new Level("data/raycaster/level.txt");
 		loadTextures();
 		loadWeapons();
+		Level level = new Level("data/raycaster/level.txt", textures);
 		
 		engine = new Engine(WIDTH, HEIGHT, textures, weapon);
 		engine.setLevel(level);

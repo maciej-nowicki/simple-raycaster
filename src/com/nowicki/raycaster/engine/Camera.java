@@ -188,10 +188,10 @@ public class Camera implements KeyListener {
 	
 	/**
 	 * Multuply by rotation matrix
-	 * 
+	 * <pre>
 	 * [ cos(angle) -sin(angle) ]
 	 * [ sin(angle)  cos(angle) ]
-	 * 
+	 * </prer>
 	 * @param angle
 	 */
 	private void rotateZ(double angle) {
