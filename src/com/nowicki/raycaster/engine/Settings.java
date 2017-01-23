@@ -13,6 +13,8 @@ public class Settings {
 	
 	public static final double WALKING_EFFECT_SCALE = 0.015;
 	
+	public static final int FOG_DISTANCE = 15;
+	
 	public static boolean debug = false;
 	public static boolean fullScreen = false;
 	public static boolean walkingEffect = false;

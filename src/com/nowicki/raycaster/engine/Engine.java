@@ -174,7 +174,7 @@ public class Engine {
 					}
 					
 					if (Settings.walls == DrawMode.TEXTURED_SHADED) {
-						texel = fadeToBlack(texel, wallDistance, 15);
+						texel = fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
 					}
 					
 					int y1 = y;
@@ -285,12 +285,16 @@ public class Engine {
 				    	for (int y=drawStartY; y<drawEndY; y++) {
 				    		int u = (256 * (x - (-spriteWidth / 2 + spriteScreenX)) * texture.getSize() / spriteWidth) / 256;
 				    		int v = (((y * 256 - height * 128 + spriteHeight * 128) * texture.getSize()) / spriteHeight) / 256;
-				    		int pixel = texture.getPixel(u, v);
-				    		if (!new Color(pixel).equals(Color.BLACK)) {
+				    		int texel = texture.getPixel(u, v);
+				    		if (!new Color(texel).equals(Color.BLACK)) {
 				    			
 				    			int y1 = clipVertically(y + verticalDisplace);
 				    			
-				    			buffer[y1*width+x] = pixel;
+				    			if (Settings.walls == DrawMode.TEXTURED_SHADED) {
+				    				texel = fadeToBlack(texel, sprite.distanceToCamera, Settings.FOG_DISTANCE);
+				    			}
+				    			
+				    			buffer[y1*width+x] = texel;
 				    		}
 				    	}
 			    	}
