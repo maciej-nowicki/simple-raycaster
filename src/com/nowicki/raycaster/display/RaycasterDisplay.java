@@ -91,7 +91,9 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	}
 	
 	private void loadWeapons() throws IOException {
-		weapon = new Weapon("data/raycaster/pics/shotgun.png", new int[] {0, 1, 2, 3, 3, 4, 4, 5, 5, 4, 4, 3}, new int[] {87, 172, 256, 386, 480, 596});
+		weapon = new Weapon("data/raycaster/pics/shotgun.png", 
+				new int[] { 0, 1, 2, 3, 3, 4, 4, 5, 5, 4, 4, 3 },
+				new int[] { 87, 172, 256, 386, 480, 596 });
 	}
 
 	@Override

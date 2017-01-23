@@ -16,12 +16,17 @@ public class Settings {
 	public static boolean debug = false;
 	public static boolean fullScreen = false;
 	public static boolean walkingEffect = false;
+	public static boolean sprites = false;
 	public static boolean showWeapon = true;
 	public static DrawMode floors = DrawMode.TEXTURED;
 	public static DrawMode walls = DrawMode.TEXTURED;
 	
 	public static void toggleFullscreen() {
 		fullScreen = !fullScreen;
+	}
+	
+	public static void toggleSprites() {
+		sprites = !sprites;
 	}
 	
 	public static void toggleWalkingEffect() {

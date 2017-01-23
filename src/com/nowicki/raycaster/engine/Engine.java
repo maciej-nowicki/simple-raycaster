@@ -9,6 +9,7 @@ import com.nowicki.raycaster.engine.Settings.DrawMode;
 public class Engine {
 
 	private int[] buffer;
+	private double[] zBuffer;
 	private Level level;
 
 	private int width;
@@ -27,6 +28,7 @@ public class Engine {
 		this.height = height;
 		this.textures = textures;
 		this.weapon = weapon;
+		this.zBuffer = new double[widht];
 	}
 
 	public void tick(Camera camera, double frameTime) {
@@ -54,8 +56,6 @@ public class Engine {
 		
 		for (int x=0; x<width; x++) {
 			double cameraX = 2 * (x) / (double)(width)  - 1; // in <-1, 1> coordinates
-			double rayPosX = camera.xPos;
-			double rayPosY = camera.yPos;
 			double rayDirX = camera.xDir + camera.xPlane * cameraX;
 			double rayDirY = camera.yDir + camera.yPlane * cameraX;
 		
@@ -81,17 +81,17 @@ public class Engine {
 			// calculate step and initial sideDist
 			if (rayDirX < 0) {
 				stepX = -1;
-				sideDistX = (rayPosX - mapX) * deltaDistX;
+				sideDistX = (camera.xPos - mapX) * deltaDistX;
 			} else {
 				stepX = 1;
-				sideDistX = (mapX + 1.0 - rayPosX) * deltaDistX;
+				sideDistX = (mapX + 1.0 - camera.xPos) * deltaDistX;
 			}
 			if (rayDirY < 0) {
 				stepY = -1;
-				sideDistY = (rayPosY - mapY) * deltaDistY;
+				sideDistY = (camera.yPos - mapY) * deltaDistY;
 			} else {
 				stepY = 1;
-				sideDistY = (mapY + 1.0 - rayPosY) * deltaDistY;
+				sideDistY = (mapY + 1.0 - camera.yPos) * deltaDistY;
 			}
 			
 			while (!hit) {
@@ -110,10 +110,14 @@ public class Engine {
 			}
 			
 			if (side == 0) {
-				wallDistance = (mapX - rayPosX + (1 - stepX) / 2) / rayDirX;
+				wallDistance = (mapX - camera.xPos + (1 - stepX) / 2) / rayDirX;
 			} else {
-				wallDistance = (mapY - rayPosY + (1 - stepY) / 2) / rayDirY;
+				wallDistance = (mapY - camera.yPos + (1 - stepY) / 2) / rayDirY;
 			}
+			
+			// z-buffer holds distances to walls for each stripe (same for whole column)
+			// so it is used to determine if given sprite is visible or not
+			zBuffer[x] = wallDistance;
 			
 			int lineHeight = (int) (height / wallDistance);
 			
@@ -149,7 +153,7 @@ public class Engine {
 				int textureWidth = wallTexture.getSize();
 				int u, v;
 				
-				wallX = (side == 0) ? (rayPosY + wallDistance * rayDirY) : (rayPosX + wallDistance * rayDirX);
+				wallX = (side == 0) ? (camera.yPos + wallDistance * rayDirY) : (camera.xPos + wallDistance * rayDirX);
 				wallX -= Math.floor(wallX);
 				
 				u = (int) (wallX * textureWidth);
@@ -234,6 +238,24 @@ public class Engine {
 					}
 				}
 			
+			}
+		}
+
+		if (Settings.sprites) {
+			
+			// calculate distance between sprinte and camera
+			level.getSprites().stream().forEach(s -> s.distanceToCamera = MathHelper.distanceBetweenPoints(camera.xPos, camera.yPos, s.xPosition, s.yPosition));
+			
+			// sort sprites by distance to camera
+			level.getSprites().sort((s1, s2) -> (int)(s1.distanceToCamera - s2.distanceToCamera));
+			
+			// iterate over every sprite
+			// TODO - select only visible for processing at some point
+			for (Sprite sprite : level.getSprites()) {
+				
+				// distance relative to the camera
+				double spriteX = sprite.xPosition - camera.xPos;
+				double spriteY = sprite.yPosition - camera.yPos;
 			}
 		}
 		

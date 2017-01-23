@@ -3,6 +3,8 @@ package com.nowicki.raycaster.engine;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Level {
 
@@ -10,6 +12,7 @@ public class Level {
 	public static int DEFAULT_MAP_HEIGHT = 20;
 	
 	private Element[][] map;
+	private List<Sprite> sprites = new ArrayList<>();
 	
 	public Level() {
 		initDummyMap();
@@ -34,10 +37,6 @@ public class Level {
 		}
 	}
 	
-	public Element[][] getMap() {
-		return map;
-	}
-	
 	private void initDummyMap() {
 		map = new Element[DEFAULT_MAP_WIDTH][DEFAULT_MAP_HEIGHT];
 		for (int y=0; y<DEFAULT_MAP_HEIGHT; y++) {
@@ -51,9 +50,17 @@ public class Level {
 			}
 		}
 	}
+	
+	public Element[][] getMap() {
+		return map;
+	}
+	
+	public List<Sprite> getSprites() {
+		return sprites;
+	}
 
 	public boolean isObstacle(int x, int y) {
-		return map[x][y] != Element.EMPTY;
+		return map[x][y].isObstacle();
 	}
 	
 	public Element getElement(int x, int y) {
