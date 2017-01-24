@@ -248,7 +248,7 @@ public class Engine {
 			level.getSprites().stream().forEach(s -> s.distanceToCamera = MathHelper.distanceBetweenPoints(camera.xPos, camera.yPos, s.xPosition, s.yPosition));
 			
 			// sort sprites by distance to camera
-			level.getSprites().sort((s1, s2) -> (int)(s1.distanceToCamera - s2.distanceToCamera));
+			level.getSprites().sort((s1, s2) -> (int)(s2.distanceToCamera - s1.distanceToCamera));
 			
 			// iterate over every sprite
 			// TODO - select only visible for processing at some point
@@ -265,14 +265,15 @@ public class Engine {
 			
 			    // center point of the sprite on screen and its height
 			    int spriteScreenX = (int) ((width / 2) * (1 + sprite.xTransformed  / sprite.yTransformed));
+			    int spriteScreenY = (height + yShear) / 2;
 			    
 			    // assume sprites are squares, so only one dimension is needed to be calculated
 			    // but store in separate vars for the future
 			    int spriteHeight = (int) Math.abs(height / sprite.yTransformed);
 			    int spriteWidth = spriteHeight;
 				
-			    int drawStartY = clipVertically(-spriteHeight / 2 + height / 2);
-			    int drawEndY = clipVertically(spriteHeight / 2 + height / 2);
+			    int drawStartY = clipVertically(-spriteHeight / 2 + (height + yShear) / 2);
+			    int drawEndY = clipVertically(spriteHeight / 2 + (height + yShear) / 2);
 			    int drawStartX = clipHorizontally(-spriteWidth / 2 + spriteScreenX);
 			    int drawEndX = clipHorizontally(spriteWidth / 2 + spriteScreenX);
 
@@ -283,13 +284,13 @@ public class Engine {
 			    	// if is in front of the camera (yTransformed > 0) but before the wall
 			    	if (sprite.yTransformed > 0 && sprite.yTransformed < zBuffer[x]) {
 				    	for (int y=drawStartY; y<drawEndY; y++) {
-				    		int u = (256 * (x - (-spriteWidth / 2 + spriteScreenX)) * texture.getSize() / spriteWidth) / 256;
-				    		int v = (((y * 256 - height * 128 + spriteHeight * 128) * texture.getSize()) / spriteHeight) / 256;
+				    		int u = (x - (-spriteWidth / 2 + spriteScreenX)) * texture.getSize() / spriteWidth;
+				    		int v = (y - (-spriteHeight / 2 + spriteScreenY)) * texture.getSize() / spriteHeight;
 				    		int texel = texture.getPixel(u, v);
-				    		if (!new Color(texel).equals(Color.BLACK)) {
+				    		if (texel != Color.BLACK.getRGB()) {
 				    			
+				    			// apply effects if required
 				    			int y1 = clipVertically(y + verticalDisplace);
-				    			
 				    			if (Settings.walls == DrawMode.TEXTURED_SHADED) {
 				    				texel = fadeToBlack(texel, sprite.distanceToCamera, Settings.FOG_DISTANCE);
 				    			}
@@ -382,7 +383,7 @@ public class Engine {
 		for (int y=startY; y<height; y++) {
 			for (int x=startX; x<(startX+gunImageWidth); x++) {
 				int pixel = gunPixels[v*gunImageWidth+u];
-				if (pixel != -16711681) { // TODO brute-force transparency
+				if (pixel != 0xFF00FFFF) {
 					buffer[y*width+x] = pixel;
 				}
 				u++;
