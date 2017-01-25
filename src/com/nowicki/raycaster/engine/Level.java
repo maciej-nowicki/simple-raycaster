@@ -29,7 +29,10 @@ public class Level {
 					map = new Element[entries.length][lines.length];
 				}
 				for (int i=0; i<entries.length; i++) {
-					map[i][j] = Element.fromValue(Integer.parseInt(entries[i]));
+					String entry = entries[i];
+					for (int p=0; p<entry.length(); p++) {
+						map[i][j] = Element.fromValue(entry.charAt(p));
+					}
 				}
 			}
 		} catch (IOException e) {

@@ -202,7 +202,7 @@ public class Engine {
 					
 					double  currentDist;
 					
-					Texture floorTexture = textures.get(Element.FLOOR);
+					Texture floorTexture = textures.get(Element.BARREL);
 					Texture ceilingTexture = textures.get(Element.CEILING);
 					textureWidth = floorTexture.getSize();
 					
