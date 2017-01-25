@@ -1,7 +1,6 @@
 package com.nowicki.raycaster.engine;
 
 import java.awt.Color;
-import java.nio.file.Watchable;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -247,8 +246,8 @@ public class Engine {
 			// calculate distance between sprinte and camera
 			level.getSprites().stream().forEach(s -> s.distanceToCamera = MathHelper.distanceBetweenPoints(camera.xPos, camera.yPos, s.xPosition, s.yPosition));
 			
-			// sort sprites by distance to camera
-			level.getSprites().sort((s1, s2) -> (int)(s2.distanceToCamera - s1.distanceToCamera));
+			// sort sprites by distance to camera, we can ignore 0 condition in comparator here
+			level.getSprites().sort((s1, s2) -> (s2.distanceToCamera > s1.distanceToCamera) ? 1 : -1 );
 			
 			// iterate over every sprite
 			// TODO - select only visible for processing at some point
