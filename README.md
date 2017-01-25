@@ -27,6 +27,23 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * clean code
 * optimizations
 
+
+## controls
+
+* arrow keys - movement
+* CTRL - shoot
+* Q - look up
+* Z - look down
+* A - center look
+* W - toggle wall rendering method
+* F - toggle floor/ceiling rendering method
+* S - walking effect on/off
+* X - sprites on/off
+* G - weapon on/off
+* D - debug info on screen and console on/off
+* ESC - quit
+* ENTER - toggle "fullscreen" mode
+
 ## credits
 
 During implementation, I used information from following sites:
