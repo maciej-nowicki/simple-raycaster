@@ -15,10 +15,6 @@ public class Level {
 	private Element[][] map;
 	private List<Sprite> sprites = new ArrayList<>();
 	
-	public Level() {
-		initDummyMap();
-	}
-
 	public Level(String filename, Map<Element, Texture> textures) {
 		try {
 			String content = new String(Files.readAllBytes(Paths.get(filename)));
@@ -31,32 +27,18 @@ public class Level {
 				for (int i=0; i<entries.length; i++) {
 					String entry = entries[i];
 					for (int p=0; p<entry.length(); p++) {
-						map[i][j] = Element.fromValue(entry.charAt(p));
+						Element element = Element.fromValue(entry.charAt(p));
+						if (!element.isSprite()) {
+							map[i][j] = element;
+						} else {
+							Sprite sprite = new Sprite(i + 0.5, j + 0.5, textures.get(element));
+							sprites.add(sprite);
+						}
 					}
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			initDummyMap();
-		}
-		
-		// TODO read sprites from file
-		sprites.add(new Sprite(1.5, 1.5, textures.get(Element.BARREL)));
-		sprites.add(new Sprite(2.5, 1.5, textures.get(Element.BARREL)));
-		sprites.add(new Sprite(3.5, 1.5, textures.get(Element.BARREL)));
-	}
-	
-	private void initDummyMap() {
-		map = new Element[DEFAULT_MAP_WIDTH][DEFAULT_MAP_HEIGHT];
-		for (int y=0; y<DEFAULT_MAP_HEIGHT; y++) {
-			for (int x=0; x<DEFAULT_MAP_WIDTH; x++) {
-				if (x == 0 || y == 0 || x == DEFAULT_MAP_WIDTH-1 || y == DEFAULT_MAP_HEIGHT - 1) {
-					map[x][y] = Element.WALL_1;
-				}
-				else {
-					map[x][y] = Element.EMPTY;
-				}
-			}
 		}
 	}
 	
