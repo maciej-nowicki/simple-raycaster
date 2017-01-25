@@ -15,6 +15,7 @@ public enum Element {
 	// sprites
 	BARREL('b', false, false, true, null),
 	PILLAR('p', false, false, true, null),
+	CEILING_LAMP('l', false, false, true, null),
 	
 	// special
 	FLOOR('-', true, true, false, null), 
