@@ -245,19 +245,21 @@ public class Engine {
 					        ceilingTexel = ceilingTexture.getPixelWithFiltering(floorX, floorY); 
 				        }
 				        
-				    	if (Settings.floors == DrawMode.TEXTURED_SHADED) {
-				    		floorTexel = fadeToBlack(floorTexel, (height + yShear)-y, (height + yShear)/2);
-				    		ceilingTexel = fadeToBlack(ceilingTexel, (height + yShear)-y, (height + yShear)/2);
-				    	}
-				    	
 				    	int y1 = y + verticalDisplace;
 				    	int y2 = y - verticalDisplace;
 				        
 				    	if (y1 < height) {
+				    		if (Settings.floors == DrawMode.TEXTURED_SHADED) {
+					    		floorTexel = fadeToBlack(floorTexel, (height + yShear)-y, (height + yShear)/2);
+				    		}
 				    		buffer[y1*width+x] = floorTexel; 
 				    	}
+				    	
 				    	// second condition -> don't draw over walls
 				        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace)) {
+				        	if (Settings.floors == DrawMode.TEXTURED_SHADED) {
+					    		ceilingTexel = fadeToBlack(ceilingTexel, (height + yShear)-y, (height + yShear)/2);
+					    	}
 				        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
 				        }
 					}
