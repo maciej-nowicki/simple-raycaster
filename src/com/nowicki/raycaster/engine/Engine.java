@@ -214,11 +214,24 @@ public class Engine {
 				        double currentFloorX = weight * floorXWall + (1.0 - weight) * camera.xPos;
 				        double currentFloorY = weight * floorYWall + (1.0 - weight) * camera.yPos;
 		
-				        u = (int) (currentFloorX * textureWidth) % textureWidth;
-				        v = (int) (currentFloorY * textureWidth) % textureWidth;
-		
-				        int floorTexel = floorTexture.getPixel(u, v);
-				        int ceilingTexel = ceilingTexture.getPixel(u, v); 
+				        int floorTexel;
+				        int ceilingTexel;
+				        
+				        if (!Settings.textureFiltering) {
+				        	
+				        	u = (int) (currentFloorX * textureWidth) % textureWidth;
+					        v = (int) (currentFloorY * textureWidth) % textureWidth;
+				        	
+				        	floorTexel = floorTexture.getPixel(u, v);
+					        ceilingTexel = ceilingTexture.getPixel(u, v); 
+				        } else {
+				        	
+				        	currentFloorX -= Math.floor(currentFloorX);
+					        currentFloorY -= Math.floor(currentFloorY);
+				        	
+				        	floorTexel = floorTexture.getPixelWithFiltering(currentFloorX, currentFloorY);
+					        ceilingTexel = ceilingTexture.getPixelWithFiltering(currentFloorX, currentFloorY); 
+				        }
 				        
 				    	if (Settings.floors == DrawMode.TEXTURED_SHADED) {
 				    		floorTexel = fadeToBlack(floorTexel, (height + yShear)-y, (height + yShear)/2);

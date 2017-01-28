@@ -131,6 +131,9 @@ public class Camera implements KeyListener {
 		case KeyEvent.VK_X:
 			Settings.toggleSprites();
 			break;
+		case KeyEvent.VK_T:
+			Settings.toggleTextureFiltering();
+			break;
 		case KeyEvent.VK_ESCAPE:
 			display.stop();
 			break;

@@ -13,4 +13,8 @@ public class MathHelper {
 	public static double distanceBetweenPoints(double ax, double ay, double bx, double by) {
 		return Math.sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
 	}
+	
+	public static double fractional(double d) {
+		return d - Math.floor(d);
+	}
 }
