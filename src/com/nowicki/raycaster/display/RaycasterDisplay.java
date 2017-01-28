@@ -1,7 +1,6 @@
 package com.nowicki.raycaster.display;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -14,6 +13,7 @@ import java.util.Map;
 
 import javax.swing.JFrame;
 
+import com.nowicki.raycaster.controls.KeyboardController;
 import com.nowicki.raycaster.engine.Camera;
 import com.nowicki.raycaster.engine.Element;
 import com.nowicki.raycaster.engine.Engine;
@@ -44,6 +44,8 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	private Map<Element, Texture> textures = new HashMap<>();
 	private Weapon weapon;
 	
+	private KeyboardController keyboardController;
+	
 	private int windowBarHeight;
 	private long fps;
 
@@ -58,8 +60,10 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		engine = new Engine(WIDTH, HEIGHT, textures, weapon);
 		engine.setLevel(level);
 		
-		camera = new Camera(3, 10, engine, this);
-		addKeyListener(camera);
+		camera = new Camera(3, 10);
+		
+		keyboardController = new KeyboardController(engine, camera, this);
+		addKeyListener(keyboardController);
 		
 		frame = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 		engine.setBuffer(((DataBufferInt)frame.getRaster().getDataBuffer()).getData());
