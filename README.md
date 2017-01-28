@@ -18,6 +18,8 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * animated sprites
 * moving sprites
 * opacity
+* texture filtering
+* mipmapping 
 * different floor & ceiling textures
 * outside areas (no ceiling but landscape)
 * thin walls
