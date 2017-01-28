@@ -132,8 +132,11 @@ public class Engine {
 			// element which was hit by the ray
 			Element element = level.getElement(mapX, mapY);
 			
-			double wallX = 0.0;
-			double wallY = 0.0;
+			// texture coordinates in 0...1 
+			double wallX, wallY;
+			
+			// texture coordinates in real pixels
+			int u, v;
 			
 			if (Settings.walls == DrawMode.SOLID_SHADED || Settings.walls == DrawMode.SOLID) {
 				int color = element.getColor(side);
@@ -152,7 +155,6 @@ public class Engine {
 			else if (Settings.walls == DrawMode.TEXTURED || Settings.walls == DrawMode.TEXTURED_SHADED) {
 				Texture wallTexture = textures.get(element);
 				int textureWidth = wallTexture.getSize();
-				int u, v;
 				
 				wallX = (side == 0) ? (camera.yPos + wallDistance * rayDirY) : (camera.xPos + wallDistance * rayDirX);
 				wallX -= Math.floor(wallX);
@@ -212,31 +214,35 @@ public class Engine {
 					Texture ceilingTexture = textures.get(Element.CEILING);
 					textureWidth = floorTexture.getSize();
 					
+					// floor texture coordintates in 0..1 - ceiling is its mirror reflection
+					double floorX;
+					double floorY;
+					
 					for (int y=drawEnd+1; y<height+Math.abs(yShear); y++) {
 						currentDist = (height+yShear) / (2.0 * y - (height + yShear));
 		
 				        double weight = Math.abs(currentDist / (wallDistance + (wallDistance * camera.yShear)));
 				        
-				        double currentFloorX = weight * floorXWall + (1.0 - weight) * camera.xPos;
-				        double currentFloorY = weight * floorYWall + (1.0 - weight) * camera.yPos;
+				        floorX = weight * floorXWall + (1.0 - weight) * camera.xPos;
+				        floorY = weight * floorYWall + (1.0 - weight) * camera.yPos;
 		
 				        int floorTexel;
 				        int ceilingTexel;
 				        
 				        if (!Settings.textureFiltering) {
 				        	
-				        	u = (int) (currentFloorX * textureWidth) % textureWidth;
-					        v = (int) (currentFloorY * textureWidth) % textureWidth;
+				        	u = (int) (floorX * textureWidth) % textureWidth;
+					        v = (int) (floorY * textureWidth) % textureWidth;
 				        	
 				        	floorTexel = floorTexture.getPixel(u, v);
 					        ceilingTexel = ceilingTexture.getPixel(u, v); 
 				        } else {
 				        	
-				        	currentFloorX -= Math.floor(currentFloorX);
-					        currentFloorY -= Math.floor(currentFloorY);
+				        	floorX -= Math.floor(floorX);
+					        floorY -= Math.floor(floorY);
 				        	
-				        	floorTexel = floorTexture.getPixelWithFiltering(currentFloorX, currentFloorY);
-					        ceilingTexel = ceilingTexture.getPixelWithFiltering(currentFloorX, currentFloorY); 
+				        	floorTexel = floorTexture.getPixelWithFiltering(floorX, floorY);
+					        ceilingTexel = ceilingTexture.getPixelWithFiltering(floorX, floorY); 
 				        }
 				        
 				    	if (Settings.floors == DrawMode.TEXTURED_SHADED) {

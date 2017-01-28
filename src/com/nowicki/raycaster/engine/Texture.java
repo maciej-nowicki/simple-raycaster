@@ -32,6 +32,7 @@ public class Texture {
 		double uOpposite = 1 - uRatio;
 		double vOpposite = 1 - vRatio;
 		
+		// TODO optimize! do we really need to calculate each RGB component separately?
 		Color c11 = new Color(getPixelClipping(x, y));
 		Color c12 = new Color(getPixelClipping(x, y + 1));
 		Color c21 = new Color(getPixelClipping(x + 1, y));
