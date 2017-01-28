@@ -251,14 +251,14 @@ public class Engine {
 				    	}
 				    	
 				    	int y1 = y + verticalDisplace;
-				    	int y2 = y - verticalDisplace;
+				    	int y2 = (height - y) + yShear + verticalDisplace;
 				        
 				    	if (y1 < height) {
 				    		buffer[y1*width+x] = floorTexel; 
 				    	}
 				    	// second condition -> don't draw over walls
-				        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace)) {
-				        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
+				        if (y2 >= 0 && y2 < (drawStart + verticalDisplace)) {
+				        	buffer[y2*width+x] = ceilingTexel;
 				        }
 					}
 				}
