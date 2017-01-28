@@ -133,6 +133,7 @@ public class Engine {
 			Element element = level.getElement(mapX, mapY);
 			
 			double wallX = 0.0;
+			double wallY = 0.0;
 			
 			if (Settings.walls == DrawMode.SOLID_SHADED || Settings.walls == DrawMode.SOLID) {
 				int color = element.getColor(side);
@@ -156,17 +157,22 @@ public class Engine {
 				wallX = (side == 0) ? (camera.yPos + wallDistance * rayDirY) : (camera.xPos + wallDistance * rayDirX);
 				wallX -= Math.floor(wallX);
 				
-				u = (int) (wallX * textureWidth);
-				if (side == 0 && rayDirX > 0) {
-					u = textureWidth - u - 1;
-				}
-				if (side == 1 && rayDirY < 0) {
-					u = textureWidth - u - 1;
-				}
+				u = (int) (wallX * textureWidth) % textureWidth;
 				
 				for (int y=drawStart; y<drawEnd; y++) {
 					v = (((y*2 - (height + yShear) + lineHeight) * textureWidth) / lineHeight) / 2;
-					int texel = wallTexture.getPixel(u, v);
+					
+					int texel;
+					if (!Settings.textureFiltering) {
+						texel = wallTexture.getPixel(u, v);
+					}
+					else {
+						wallY = ((((double)y*2 - (height + yShear) + lineHeight)) / lineHeight) / 2;
+						wallY -= Math.floor(wallY);
+						
+						texel = wallTexture.getPixelWithFiltering(wallX, wallY);
+					}
+					
 					if (side == 0) {
 						// TODO optimize: pre-generate darker texture version
 						texel = new Color(texel).darker().getRGB();
