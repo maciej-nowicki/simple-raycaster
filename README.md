@@ -12,13 +12,13 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * shading (fog) effect
 * walking effect
 * static 2D sprites
+* texture bilinear filtering
 
 ## plans (in order of priority)
 
 * animated sprites
 * moving sprites
 * opacity
-* texture filtering
 * mipmapping 
 * different floor & ceiling textures
 * outside areas (no ceiling but landscape)
@@ -41,6 +41,7 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * F - toggle floor/ceiling rendering method
 * S - walking effect on/off
 * X - sprites on/off
+* T - texture bilinear filtering on/off (warning: slow!)
 * G - weapon on/off
 * D - debug info on screen and console on/off
 * ESC - quit
