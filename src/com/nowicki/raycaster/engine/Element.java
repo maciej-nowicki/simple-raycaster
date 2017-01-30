@@ -4,8 +4,11 @@ import java.awt.Color;
 
 public enum Element {
 
+	// floors 
+	EMPTY('0', false, false, false, null),
+	RED_CARPET('c', false, false, false, null),
+
 	// block elements
-	EMPTY('0', false, false, false, null), 
 	INACCESSIBLE('i', true, false, false, null), 
 	WALL_1('1', true, true, false, new Color(0, 200, 0)), 
 	WALL_2('2', true, true, false, new Color(0, 0, 200)), 

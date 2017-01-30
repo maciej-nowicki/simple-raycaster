@@ -15,16 +15,21 @@ public class Level {
 	private Element[][] map;
 	private List<Sprite> sprites = new ArrayList<>();
 	
+	private int width;
+	private int height;
+	
 	public Level(String filename, Map<Element, Texture> textures) {
 		try {
 			String content = new String(Files.readAllBytes(Paths.get(filename)));
 			String [] lines = content.split("\n");
-			for (int j=0; j<lines.length; j++) {
+			height = lines.length;
+			for (int j=0; j<height; j++) {
 				String [] entries = lines[j].split(",");
+				width = entries.length;
 				if (map == null) {
-					map = new Element[entries.length][lines.length];
+					map = new Element[width][height];
 				}
-				for (int i=0; i<entries.length; i++) {
+				for (int i=0; i<width; i++) {
 					String entry = entries[i];
 					for (int p=0; p<entry.length(); p++) {
 						Element element = Element.fromValue(entry.charAt(p));
@@ -59,6 +64,9 @@ public class Level {
 	}
 	
 	public Element getElement(int x, int y) {
+		if (x < 0 || y < 0 || x >= width || y >= height) {
+			return null;
+		}
 		return map[x][y];
 	}
 }

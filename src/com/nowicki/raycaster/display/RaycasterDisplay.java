@@ -73,11 +73,12 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		setResizable(false);
 		setTitle(FRAME_TITLE);
 		setDefaultLookAndFeelDecorated(true);
-		setBackground(Color.black);
+		setBackground(Color.BLACK);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		windowBarHeight = (int) (HEIGHT - getContentPane().getSize().getHeight());
+		setSize(WIDTH, HEIGHT + windowBarHeight);
 		
 		thread = new Thread(this);
 		thread.setDaemon(true);
@@ -94,6 +95,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		textures.put(Element.CEILING_LAMP, new Texture("data/raycaster/pics/greenlight.png"));
 		textures.put(Element.FLOOR, new Texture("data/raycaster/pics/floor.png"));
 		textures.put(Element.CEILING, new Texture("data/raycaster/pics/ceiling.png"));
+		textures.put(Element.RED_CARPET, new Texture("data/raycaster/pics/redcarpet.png"));
 	}
 	
 	private void loadWeapons() throws IOException {

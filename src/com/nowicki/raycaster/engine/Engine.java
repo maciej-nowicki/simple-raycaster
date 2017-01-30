@@ -52,10 +52,12 @@ public class Engine {
 				gunVerticalDisplace = (int) (2 * Math.sin(movement));
 				gunHorizontalDisplace = (int) (8 * Math.cos(movement));
 			}
+		} else {
+			verticalDisplace = 0;
 		}
 		
 		for (int x=0; x<width; x++) {
-			double cameraX = 2 * (x) / (double)(width)  - 1; // in <-1, 1> coordinates
+			double cameraX = 2 * (x) / (double)(width) - 1; // in <-1, 1> coordinates
 			double rayDirX = camera.xDir + camera.xPlane * cameraX;
 			double rayDirY = camera.yDir + camera.yPlane * cameraX;
 		
@@ -123,11 +125,12 @@ public class Engine {
 			
 			// calculate lowest and highest pixel to fill in current stripe
 			// consider look up/down (yShear) in calculation
-			int drawStart = -lineHeight / 2 + (height + yShear) / 2;
-			int drawEnd = lineHeight / 2 + (height + yShear) / 2;
+			int drawStartNotClipped = -lineHeight / 2 + (height + yShear) / 2;
+			int drawEndNotClipped = lineHeight / 2 + (height + yShear) / 2;
 			
-			drawStart = clipVertically(drawStart);
-			drawEnd = clipVertically(drawEnd);
+			// clip calculated values to screen
+			int drawStart = clipVertically(drawStartNotClipped);
+			int drawEnd = clipVertically(drawEndNotClipped);
 			
 			// element which was hit by the ray
 			Element element = level.getElement(mapX, mapY);
@@ -162,10 +165,10 @@ public class Engine {
 				u = (int) (wallX * textureWidth) % textureWidth;
 				
 				for (int y=drawStart; y<drawEnd; y++) {
-					v = (((y*2 - (height + yShear) + lineHeight) * textureWidth) / lineHeight) / 2;
 					
 					int texel;
 					if (!Settings.textureFiltering) {
+						v = (((y*2 - (height + yShear) + lineHeight) * textureWidth) / lineHeight) / 2;
 						texel = wallTexture.getPixel(u, v);
 					}
 					else {
@@ -208,24 +211,24 @@ public class Engine {
 						floorYWall = mapY + 1.0;
 					}
 					
-					double  currentDist;
-					
-					Texture floorTexture = textures.get(Element.FLOOR);
-					Texture ceilingTexture = textures.get(Element.CEILING);
-					textureWidth = floorTexture.getSize();
-					
-					// floor texture coordintates in 0..1 - ceiling is its mirror reflection
-					double floorX;
-					double floorY;
-					
-					for (int y=drawEnd+1; y<height+Math.abs(yShear); y++) {
-						currentDist = (height+yShear) / (2.0 * y - (height + yShear));
+					for (int y=drawEnd+1; y<height + Math.abs(yShear + verticalDisplace); y++) {
+						double currentDist = (height+yShear) / (2.0 * y - (height + yShear));
 		
 				        double weight = Math.abs(currentDist / (wallDistance + (wallDistance * camera.yShear)));
 				        
-				        floorX = weight * floorXWall + (1.0 - weight) * camera.xPos;
-				        floorY = weight * floorYWall + (1.0 - weight) * camera.yPos;
+				        // coordinates of point where the ray hits the floor
+				        double floorX = Math.abs(weight * floorXWall + (1.0 - weight) * camera.xPos);
+				        double floorY = Math.abs(weight * floorYWall + (1.0 - weight) * camera.yPos);
 		
+						Texture floorTexture = textures.get(Element.FLOOR);
+						Texture ceilingTexture = textures.get(Element.CEILING);
+						textureWidth = floorTexture.getSize();
+						
+						Element floor = level.getElement((int)floorX, (int)floorY);
+						if (floor != null && floor != Element.EMPTY && floor != Element.INACCESSIBLE && !floor.isWall()) {
+							floorTexture = textures.get(floor);
+						}
+						
 				        int floorTexel;
 				        int ceilingTexel;
 				        
@@ -233,9 +236,9 @@ public class Engine {
 				        	
 				        	u = (int) (floorX * textureWidth) % textureWidth;
 					        v = (int) (floorY * textureWidth) % textureWidth;
-				        	
-				        	floorTexel = floorTexture.getPixel(u, v);
-					        ceilingTexel = ceilingTexture.getPixel(u, v); 
+					        
+					        floorTexel = floorTexture.getPixel(u, v);
+						    ceilingTexel = ceilingTexture.getPixel(u, v); 
 				        } else {
 				        	
 				        	floorX -= Math.floor(floorX);
