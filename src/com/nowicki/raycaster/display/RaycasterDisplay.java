@@ -15,7 +15,7 @@ import javax.swing.JFrame;
 
 import com.nowicki.raycaster.controls.KeyboardController;
 import com.nowicki.raycaster.engine.Camera;
-import com.nowicki.raycaster.engine.Element;
+import com.nowicki.raycaster.engine.Element.Entry;
 import com.nowicki.raycaster.engine.Engine;
 import com.nowicki.raycaster.engine.Level;
 import com.nowicki.raycaster.engine.Settings;
@@ -41,7 +41,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	
 	private Engine engine;
 	private Camera camera;
-	private Map<Element, Texture> textures = new HashMap<>();
+	private Map<Entry, Texture> textures = new HashMap<>();
 	private Weapon weapon;
 	
 	private KeyboardController keyboardController;
@@ -57,7 +57,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		loadWeapons();
 		Level level = new Level("data/raycaster/level.txt", textures);
 		
-		engine = new Engine(WIDTH, HEIGHT, textures, weapon);
+		engine = new Engine(WIDTH, HEIGHT, weapon);
 		engine.setLevel(level);
 		
 		camera = new Camera(3, 10);
@@ -86,16 +86,18 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	}
 	
 	private void loadTextures() throws IOException {
-		textures.put(Element.WALL_1, new Texture("data/raycaster/pics/greystone.png"));
-		textures.put(Element.WALL_2, new Texture("data/raycaster/pics/bluestone.png"));
-		textures.put(Element.WALL_3, new Texture("data/raycaster/pics/colorstone.png"));
-		textures.put(Element.WALL_WOOD, new Texture("data/raycaster/pics/wood.png"));
-		textures.put(Element.BARREL, new Texture("data/raycaster/pics/barrel.png"));
-		textures.put(Element.PILLAR, new Texture("data/raycaster/pics/pillar.png"));
-		textures.put(Element.CEILING_LAMP, new Texture("data/raycaster/pics/greenlight.png"));
-		textures.put(Element.FLOOR, new Texture("data/raycaster/pics/floor.png"));
-		textures.put(Element.CEILING, new Texture("data/raycaster/pics/ceiling.png"));
-		textures.put(Element.RED_CARPET, new Texture("data/raycaster/pics/redcarpet.png"));
+		textures.put(Entry.WALL_1_GREYSTONE, new Texture("data/raycaster/pics/greystone.png"));
+		textures.put(Entry.WALL_2_BLUESTONE, new Texture("data/raycaster/pics/bluestone.png"));
+		textures.put(Entry.WALL_3_COLORSTONE, new Texture("data/raycaster/pics/colorstone.png"));
+		textures.put(Entry.WALL_4_WOOD, new Texture("data/raycaster/pics/wood.png"));
+		textures.put(Entry.WALL_5_BRICK, new Texture("data/raycaster/pics/redbrick.png"));
+		textures.put(Entry.WALL_6_BRICK_WITH_EAGLE, new Texture("data/raycaster/pics/eagle.png"));
+		textures.put(Entry.BARREL, new Texture("data/raycaster/pics/barrel.png"));
+		textures.put(Entry.PILLAR, new Texture("data/raycaster/pics/pillar.png"));
+		textures.put(Entry.CEILING_LAMP, new Texture("data/raycaster/pics/greenlight.png"));
+		textures.put(Entry.DEFAULT_FLOOR, new Texture("data/raycaster/pics/floor.png"));
+		textures.put(Entry.DEFAULT_CEILING, new Texture("data/raycaster/pics/ceiling.png"));
+		textures.put(Entry.RED_CARPET, new Texture("data/raycaster/pics/redcarpet.png"));
 	}
 	
 	private void loadWeapons() throws IOException {

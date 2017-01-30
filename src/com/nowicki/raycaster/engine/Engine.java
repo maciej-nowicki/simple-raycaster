@@ -2,7 +2,6 @@ package com.nowicki.raycaster.engine;
 
 import java.awt.Color;
 import java.util.Arrays;
-import java.util.Map;
 
 import com.nowicki.raycaster.engine.Settings.DrawMode;
 
@@ -19,14 +18,12 @@ public class Engine {
 	private int verticalDisplace = 0;
 	private int gunVerticalDisplace = 0;
 	private int gunHorizontalDisplace = 0;
-	private Map<Element, Texture> textures;
 	private Weapon weapon;
 	private long frame = 0;
 	
-	public Engine(int widht, int height, Map<Element, Texture> textures, Weapon weapon) {
+	public Engine(int widht, int height, Weapon weapon) {
 		this.width = widht;
 		this.height = height;
-		this.textures = textures;
 		this.weapon = weapon;
 		this.zBuffer = new double[widht];
 	}
@@ -156,7 +153,7 @@ public class Engine {
 				drawLine(x, drawStart, drawEnd, color);
 			}
 			else if (Settings.walls == DrawMode.TEXTURED || Settings.walls == DrawMode.TEXTURED_SHADED) {
-				Texture wallTexture = textures.get(element);
+				Texture wallTexture = element.getWallTexture(side);
 				int textureWidth = wallTexture.getSize();
 				
 				wallX = (side == 0) ? (camera.yPos + wallDistance * rayDirY) : (camera.xPos + wallDistance * rayDirX);
@@ -219,52 +216,56 @@ public class Engine {
 				        // coordinates of point where the ray hits the floor
 				        double floorX = Math.abs(weight * floorXWall + (1.0 - weight) * camera.xPos);
 				        double floorY = Math.abs(weight * floorYWall + (1.0 - weight) * camera.yPos);
-		
-						Texture floorTexture = textures.get(Element.FLOOR);
-						Texture ceilingTexture = textures.get(Element.CEILING);
-						textureWidth = floorTexture.getSize();
 						
-						Element floor = level.getElement((int)floorX, (int)floorY);
-						if (floor != null && floor != Element.EMPTY && floor != Element.INACCESSIBLE && !floor.isWall()) {
-							floorTexture = textures.get(floor);
+						Element floorElement = level.getElement((int)floorX, (int)floorY);
+						
+						// may be null if we look "behind" the level - can ignore that
+						if (floorElement != null) {
+							if (floorElement.isFloorVisible() || floorElement.isCeilingVisible()) {
+								
+								Texture floorTexture = floorElement.getFloorTexture();
+								Texture ceilingTexture = floorElement.getCeilingTexture();
+								textureWidth = floorTexture.getSize();
+								
+						        int floorTexel;
+						        int ceilingTexel;
+						        
+						        if (!Settings.textureFiltering) {
+						        	
+						        	u = (int) (floorX * textureWidth) % textureWidth;
+							        v = (int) (floorY * textureWidth) % textureWidth;
+							        
+							        floorTexel = floorTexture.getPixel(u, v);
+								    ceilingTexel = ceilingTexture.getPixel(u, v); 
+						        } else {
+						        	
+						        	floorX -= Math.floor(floorX);
+							        floorY -= Math.floor(floorY);
+						        	
+						        	floorTexel = floorTexture.getPixelWithFiltering(floorX, floorY);
+							        ceilingTexel = ceilingTexture.getPixelWithFiltering(floorX, floorY); 
+						        }
+						        
+						    	int y1 = y + verticalDisplace;
+						    	int y2 = y - verticalDisplace;
+						        
+						    	
+						    	if (y1 < height && floorElement.isFloorVisible()) {
+						    		if (Settings.floors == DrawMode.TEXTURED_SHADED) {
+							    		floorTexel = fadeToBlack(floorTexel, (height + yShear)-y, (height + yShear)/2);
+						    		}
+						    		buffer[y1*width+x] = floorTexel; 
+						    	}
+						    	
+						    	// second condition -> don't draw over walls
+						        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace) && floorElement.isCeilingVisible()) {
+						        	if (Settings.floors == DrawMode.TEXTURED_SHADED) {
+							    		ceilingTexel = fadeToBlack(ceilingTexel, (height + yShear)-y, (height + yShear)/2);
+							    	}
+						        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
+						        }
+							}
 						}
-						
-				        int floorTexel;
-				        int ceilingTexel;
-				        
-				        if (!Settings.textureFiltering) {
-				        	
-				        	u = (int) (floorX * textureWidth) % textureWidth;
-					        v = (int) (floorY * textureWidth) % textureWidth;
-					        
-					        floorTexel = floorTexture.getPixel(u, v);
-						    ceilingTexel = ceilingTexture.getPixel(u, v); 
-				        } else {
-				        	
-				        	floorX -= Math.floor(floorX);
-					        floorY -= Math.floor(floorY);
-				        	
-				        	floorTexel = floorTexture.getPixelWithFiltering(floorX, floorY);
-					        ceilingTexel = ceilingTexture.getPixelWithFiltering(floorX, floorY); 
-				        }
-				        
-				    	int y1 = y + verticalDisplace;
-				    	int y2 = y - verticalDisplace;
-				        
-				    	if (y1 < height) {
-				    		if (Settings.floors == DrawMode.TEXTURED_SHADED) {
-					    		floorTexel = fadeToBlack(floorTexel, (height + yShear)-y, (height + yShear)/2);
-				    		}
-				    		buffer[y1*width+x] = floorTexel; 
-				    	}
-				    	
-				    	// second condition -> don't draw over walls
-				        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace)) {
-				        	if (Settings.floors == DrawMode.TEXTURED_SHADED) {
-					    		ceilingTexel = fadeToBlack(ceilingTexel, (height + yShear)-y, (height + yShear)/2);
-					    	}
-				        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
-				        }
 					}
 				}
 			

@@ -4,8 +4,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import com.nowicki.raycaster.engine.Element.Entry;
+import com.nowicki.raycaster.engine.Element.EntryType;
 
 public class Level {
 
@@ -18,7 +23,7 @@ public class Level {
 	private int width;
 	private int height;
 	
-	public Level(String filename, Map<Element, Texture> textures) {
+	public Level(String filename, Map<Entry, Texture> textures) {
 		try {
 			String content = new String(Files.readAllBytes(Paths.get(filename)));
 			String [] lines = content.split("\n");
@@ -30,16 +35,22 @@ public class Level {
 					map = new Element[width][height];
 				}
 				for (int i=0; i<width; i++) {
-					String entry = entries[i];
-					for (int p=0; p<entry.length(); p++) {
-						Element element = Element.fromValue(entry.charAt(p));
-						if (!element.isSprite()) {
-							map[i][j] = element;
-						} else {
-							Sprite sprite = new Sprite(i + 0.5, j + 0.5, textures.get(element));
+	
+					Set<Entry> entriesSet = new HashSet<>();
+					
+					String entryId = entries[i];
+					for (int p=0; p<entryId.length(); p++) {
+						Entry entry = Entry.fromValue(entryId.charAt(p));
+						if (entry.getType() == EntryType.SPRITE) {
+							Sprite sprite = new Sprite(i + 0.5, j + 0.5, textures.get(entry));
 							sprites.add(sprite);
 						}
+						else {
+							entriesSet.add(entry);
+						}
 					}
+					
+					map[i][j] = new Element(entriesSet, textures);
 				}
 			}
 		} catch (IOException e) {
