@@ -7,7 +7,7 @@ import java.util.Set;
 public class Element {
 
 	public enum EntryType {
-		EMPTY, INACCESSIBLE, WALL, FLOOR, CEILING, SPRITE;
+		EMPTY, INACCESSIBLE, WALL, FLOOR, CEILING, SPRITE, SKY;
 	};
 	
 	public enum Entry {
@@ -33,7 +33,10 @@ public class Element {
 		// sprites
 		BARREL('b', EntryType.SPRITE, true, null),
 		PILLAR('p', EntryType.SPRITE, true, null),
-		CEILING_LAMP('l', EntryType.SPRITE, true, null);
+		CEILING_LAMP('l', EntryType.SPRITE, true, null),
+		
+		// special
+		SKY('-', EntryType.SKY, true, null);
 		
 		private char id;
 		private EntryType type;

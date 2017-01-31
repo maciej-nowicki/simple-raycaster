@@ -20,11 +20,14 @@ public class Level {
 	private Element[][] map;
 	private List<Sprite> sprites = new ArrayList<>();
 	
+	private Texture sky;
 	private int width;
 	private int height;
 	
 	public Level(String filename, Map<Entry, Texture> textures) {
 		try {
+			sky = textures.get(Entry.SKY);
+			
 			String content = new String(Files.readAllBytes(Paths.get(filename)));
 			String [] lines = content.split("\n");
 			height = lines.length;
@@ -79,5 +82,9 @@ public class Level {
 			return null;
 		}
 		return map[x][y];
+	}
+	
+	public Texture getSkyTexture() {
+		return sky;
 	}
 }

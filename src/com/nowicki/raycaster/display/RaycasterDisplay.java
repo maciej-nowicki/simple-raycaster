@@ -98,6 +98,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		textures.put(Entry.DEFAULT_FLOOR, new Texture("data/raycaster/pics/floor.png"));
 		textures.put(Entry.DEFAULT_CEILING, new Texture("data/raycaster/pics/ceiling.png"));
 		textures.put(Entry.RED_CARPET, new Texture("data/raycaster/pics/redcarpet.png"));
+		textures.put(Entry.SKY, new Texture("data/raycaster/pics/sky.png"));
 	}
 	
 	private void loadWeapons() throws IOException {

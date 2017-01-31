@@ -10,21 +10,23 @@ import javax.imageio.ImageIO;
 public class Texture {
 
 	private final int[] pixels;
-	private final int size;
+	private final int width;
+	private final int height;
 
 	public Texture(String filename) throws IOException {
 		BufferedImage image = ImageIO.read(new File(filename));
 		this.pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
-		this.size = image.getWidth();
+		this.width = image.getWidth();
+		this.height = image.getHeight();
 	}
 
 	public int getPixel(int u, int v) {
-		return pixels[v * size + u];
+		return pixels[v * width + u];
 	}
 	
 	public int getPixelWithFiltering(double u, double v) {
-		u *= size;
-		v *= size;
+		u *= width;
+		v *= height;
 		int x = (int) Math.floor(u);
 		int y = (int) Math.floor(v);
 		double uRatio = u - x;
@@ -50,14 +52,20 @@ public class Texture {
 	}
 	
 	private int getPixelClipping(int u, int v) {
-		return getPixel(u % size, v % size);
+		return getPixel(u % width, v % height);
 	}
 
 	public int[] getPixels() {
 		return pixels;
 	}
 
-	public int getSize() {
-		return size;
+	public int getWidth() {
+		return width;
 	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	
 }

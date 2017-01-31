@@ -40,7 +40,7 @@ public class Engine {
 			yShear += (yShear < 0) ? - 1 : 1;
 		}
 
-		drawCeilingAndFloor(yShear);
+		drawCeilingAndFloor(camera, yShear);
 		
 		if (Settings.walkingEffect) {
 			if (camera.isPlayerMoving()) {
@@ -154,7 +154,7 @@ public class Engine {
 			}
 			else if (Settings.walls == DrawMode.TEXTURED || Settings.walls == DrawMode.TEXTURED_SHADED) {
 				Texture wallTexture = element.getWallTexture(side);
-				int textureWidth = wallTexture.getSize();
+				int textureWidth = wallTexture.getWidth();
 				
 				wallX = (side == 0) ? (camera.yPos + wallDistance * rayDirY) : (camera.xPos + wallDistance * rayDirX);
 				wallX -= Math.floor(wallX);
@@ -225,7 +225,7 @@ public class Engine {
 								
 								Texture floorTexture = floorElement.getFloorTexture();
 								Texture ceilingTexture = floorElement.getCeilingTexture();
-								textureWidth = floorTexture.getSize();
+								textureWidth = floorTexture.getWidth();
 								
 						        int floorTexel;
 						        int ceilingTexel;
@@ -314,8 +314,8 @@ public class Engine {
 			    	// if is in front of the camera (yTransformed > 0) but before the wall
 			    	if (sprite.yTransformed > 0 && sprite.yTransformed < zBuffer[x]) {
 				    	for (int y=drawStartY; y<drawEndY; y++) {
-				    		int u = (x - (-spriteWidth / 2 + spriteScreenX)) * texture.getSize() / spriteWidth;
-				    		int v = (y - (-spriteHeight / 2 + spriteScreenY)) * texture.getSize() / spriteHeight;
+				    		int u = (x - (-spriteWidth / 2 + spriteScreenX)) * texture.getWidth() / spriteWidth;
+				    		int v = (y - (-spriteHeight / 2 + spriteScreenY)) * texture.getHeight() / spriteHeight;
 				    		int texel = texture.getPixel(u, v);
 				    		if (texel != Color.BLACK.getRGB()) {
 				    			
@@ -332,6 +332,8 @@ public class Engine {
 			    }
 			}
 		}
+		
+//		drawSky(camera, yShear);
 		
 		if (Settings.showWeapon) {
 			drawWeapon(frameTime);
@@ -368,7 +370,7 @@ public class Engine {
 		}
 	}
 	
-	private void drawCeilingAndFloor(int yShear) {
+	private void drawCeilingAndFloor(Camera camera, int yShear) {
 		int half;
 		switch (Settings.floors) {
 		case SOLID:
@@ -393,7 +395,45 @@ public class Engine {
 			break;
 		default:
 			Arrays.fill(buffer, 0);
+			drawSky(camera, yShear);
 		}
+	}
+	
+	private void drawSky(Camera camera, int yShear) {
+		Texture sky = level.getSkyTexture();
+		double tStart = sky.getWidth() / 2 * ((Math.atan2(camera.xDir, camera.yDir) / Math.PI) + 1);
+		int ty = 0;
+		int sh = (yShear > 0) ? yShear : 0;
+		for (int y=0; y<sky.getHeight(); y++) {
+			int tx = (int) tStart;
+			for (int x=0; x<width; x++) {
+				buffer[y*width+x] = sky.getPixel(tx++, ty);
+				if (tx == 400) {
+					tx = 0;
+				}
+			}
+			ty++;
+		}
+		
+//		int cx = width / 2;
+//		int cy = height / 2;
+//		int hl = height / 2;
+//		
+//		for (int y=0; y<hl; y++) {
+//			for (int x=0; x<width; x++) {
+//				double nx = (double)(x - cx) / cx;
+//				double ny = (double)(y - cy) / cy;
+//				
+//				// real spere mapping would be (Math.asin(nx)/Math.PI + 0.5) but it's slow
+//				int u = (int) (2 * (nx/2 + 0.5) * sky.getWidth()) % sky.getWidth();
+//				int v = (int) (1.5 * (ny/2 + 0.5) * sky.getHeight()) % sky.getHeight();
+//
+////				int u = (int) (2 * (Math.asin(nx)/Math.PI + 0.5) * sky.getWidth()) % sky.getWidth();
+////				int v = (int) (2 * (Math.asin(ny)/Math.PI + 0.5) * sky.getHeight()) % sky.getHeight();
+//				
+//				buffer[y*width+x] = sky.getPixel(u, v);
+//			}
+//		}
 	}
 	
 	private void drawWeapon(double frameSkip) {
