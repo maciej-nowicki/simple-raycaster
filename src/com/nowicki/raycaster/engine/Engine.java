@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.Arrays;
 
 import com.nowicki.raycaster.engine.Settings.DrawMode;
+import com.nowicki.raycaster.engine.Settings.SkyMode;
 
 public class Engine {
 
@@ -333,8 +334,6 @@ public class Engine {
 			}
 		}
 		
-//		drawSky(camera, yShear);
-		
 		if (Settings.showWeapon) {
 			drawWeapon(frameTime);
 		}
@@ -394,46 +393,93 @@ public class Engine {
 			}
 			break;
 		default:
-			Arrays.fill(buffer, 0);
 			drawSky(camera, yShear);
 		}
 	}
 	
 	private void drawSky(Camera camera, int yShear) {
+		
+		Arrays.fill(buffer, 0);
+		
+		switch (Settings.sky) {
+			case SIMPLE:
+			case SIMPLE_STRETCHED:
+				drawSkySimple(camera, yShear);
+				break;
+			case SPHERE:
+				drawSkySphere(camera, yShear);
+				break;
+		}
+		
+	}
+	
+	private void drawSkySimple(Camera camera, int yShear) {
 		Texture sky = level.getSkyTexture();
 		double tStart = sky.getWidth() / 2 * ((Math.atan2(camera.xDir, camera.yDir) / Math.PI) + 1);
+	
 		int ty = 0;
-		int sh = (yShear > 0) ? yShear : 0;
-		for (int y=0; y<sky.getHeight(); y++) {
+		int texel = Color.BLACK.getRGB();
+		int skyHeight = sky.getHeight();
+		if (Settings.sky == SkyMode.SIMPLE_STRETCHED) {
+			if (yShear > 0) {
+				skyHeight += yShear / 2;
+			} else if (yShear > 0) {
+				ty = yShear / 2; // TODO
+			}
+		}
+		
+		for (int y=0; y<skyHeight; y++) {
 			int tx = (int) tStart;
 			for (int x=0; x<width; x++) {
-				buffer[y*width+x] = sky.getPixel(tx++, ty);
-				if (tx == 400) {
+				
+				if (Settings.sky == SkyMode.SIMPLE) {
+					texel = sky.getPixel(tx++, ty);
+				} else if (Settings.sky == SkyMode.SIMPLE_STRETCHED) {
+					texel = sky.getPixel((double)tx++ / sky.getWidth(), (double)ty / skyHeight);
+				}
+				
+				buffer[y*width+x] = texel;
+				
+				if (tx == sky.getWidth()) {
 					tx = 0;
 				}
 			}
 			ty++;
 		}
+	}
+	
+	private void drawSkySphere(Camera camera, int yShear) {
+		Texture sky = level.getSkyTexture();
 		
-//		int cx = width / 2;
-//		int cy = height / 2;
-//		int hl = height / 2;
-//		
-//		for (int y=0; y<hl; y++) {
-//			for (int x=0; x<width; x++) {
-//				double nx = (double)(x - cx) / cx;
-//				double ny = (double)(y - cy) / cy;
-//				
-//				// real spere mapping would be (Math.asin(nx)/Math.PI + 0.5) but it's slow
-//				int u = (int) (2 * (nx/2 + 0.5) * sky.getWidth()) % sky.getWidth();
-//				int v = (int) (1.5 * (ny/2 + 0.5) * sky.getHeight()) % sky.getHeight();
-//
-////				int u = (int) (2 * (Math.asin(nx)/Math.PI + 0.5) * sky.getWidth()) % sky.getWidth();
-////				int v = (int) (2 * (Math.asin(ny)/Math.PI + 0.5) * sky.getHeight()) % sky.getHeight();
-//				
-//				buffer[y*width+x] = sky.getPixel(u, v);
-//			}
-//		}
+		int cx = width / 2;
+		int cy = height / 2;
+		int hl = height / 2;
+	
+		// TODO - fix Pi/180 rad problem
+		double cameraDirection = camera.xDir;
+		
+		for (int y=0; y<hl; y++) {
+			for (int x=0; x<width; x++) {
+				
+				double nx = (double)(x - cx) / cx;
+				double ny = (double)(y - cy) / cy;
+				
+				// adjust nx to the camera
+				nx = ((nx + cameraDirection + 2) % 2) - 1;
+				
+				// real spere mapping would be (Math.asin(nx)/Math.PI + 0.5) but it's slow
+				int u = (int) ((nx/2 + 0.5) * sky.getWidth()) % sky.getWidth();
+				int v = (int) (2 * (ny/2 + 0.5) * sky.getHeight()) % sky.getHeight();
+				
+				try {
+					buffer[y*width+x] = sky.getPixel(u, v);
+				} catch (Exception e) {
+					System.out.println(camera.xDir + " " + nx + " " + ny);
+					throw e;
+				}
+			}
+		}
+
 	}
 	
 	private void drawWeapon(double frameSkip) {

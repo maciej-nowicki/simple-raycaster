@@ -6,6 +6,18 @@ public class Settings {
 
 	enum DrawMode {
 		NONE, SOLID, SOLID_SHADED, TEXTURED, TEXTURED_SHADED;
+		
+		public DrawMode next() {
+	        return values()[(ordinal()+1) % values().length];
+	    }
+	}
+	
+	enum SkyMode {
+		NONE, SIMPLE, SIMPLE_STRETCHED, SPHERE;
+		
+		public SkyMode next() {
+	        return values()[(ordinal()+1) % values().length];
+	    }
 	}
 	
 	public static final int CEILING_COLOUR = new Color(80, 80, 80).getRGB();
@@ -23,6 +35,7 @@ public class Settings {
 	public static boolean textureFiltering = false;
 	public static DrawMode floors = DrawMode.TEXTURED;
 	public static DrawMode walls = DrawMode.TEXTURED;
+	public static SkyMode sky = SkyMode.SPHERE;
 	
 	public static void toggleFullscreen() {
 		fullScreen = !fullScreen;
@@ -77,5 +90,9 @@ public class Settings {
 			walls = DrawMode.SOLID;
 			floors = DrawMode.SOLID;
 		}
+	}
+	
+	public static void toggleSky() {
+		sky = sky.next();
 	}
 }

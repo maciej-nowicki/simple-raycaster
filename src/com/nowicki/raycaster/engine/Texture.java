@@ -24,6 +24,10 @@ public class Texture {
 		return pixels[v * width + u];
 	}
 	
+	public int getPixel(double u, double v) {
+		return getPixel((int)(u * width), (int)(v * height));
+	}
+	
 	public int getPixelWithFiltering(double u, double v) {
 		u *= width;
 		v *= height;
