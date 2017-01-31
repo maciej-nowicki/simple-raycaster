@@ -13,6 +13,8 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * walking effect
 * static 2D sprites
 * texture bilinear filtering
+* different floor & ceiling textures
+* outside areas with different landsape projections
 
 ## plans (in order of priority)
 
@@ -20,8 +22,6 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * moving sprites
 * opacity
 * mipmapping 
-* different floor & ceiling textures
-* outside areas (no ceiling but landscape)
 * thin walls
 * lightning effecects
 * more than one texture on wall (like in DOOM)
@@ -39,6 +39,8 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * A - center look
 * W - toggle wall rendering method
 * F - toggle floor/ceiling rendering method
+* E - shading on/off
+* H - toggle landsape rendering mode
 * S - walking effect on/off
 * X - sprites on/off
 * T - texture bilinear filtering on/off (warning: slow!)
