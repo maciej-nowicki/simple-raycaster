@@ -21,6 +21,7 @@ public class Element {
 		INVISIBLE_FLOOR('?', EntryType.FLOOR, false, null), 
 		INVISIBLE_CEILING('!', EntryType.CEILING, false, null), 
 		RED_CARPET('c', EntryType.FLOOR, true, null),
+		GRASS('g', EntryType.FLOOR, true, null),
 
 		// wall elements
 		WALL_1_GREYSTONE('1', EntryType.WALL, true, new Color(0, 200, 0)), 

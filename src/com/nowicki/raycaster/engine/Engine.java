@@ -139,11 +139,11 @@ public class Engine {
 			// texture coordinates in real pixels
 			int u, v;
 			
-			if (Settings.walls == DrawMode.SOLID_SHADED || Settings.walls == DrawMode.SOLID) {
+			if (Settings.walls == DrawMode.SOLID) {
 				int color = element.getColor(side);
 				
-				if (Settings.walls == DrawMode.SOLID_SHADED) {
-					color = fadeToBlack(color, wallDistance, 20);
+				if (Settings.shading) {
+					color = fadeToBlack(color, wallDistance, Settings.FOG_DISTANCE);
 				}
 				
 				if (Settings.walkingEffect) {
@@ -153,7 +153,7 @@ public class Engine {
 				
 				drawLine(x, drawStart, drawEnd, color);
 			}
-			else if (Settings.walls == DrawMode.TEXTURED || Settings.walls == DrawMode.TEXTURED_SHADED) {
+			else if (Settings.walls == DrawMode.TEXTURED) {
 				Texture wallTexture = element.getWallTexture(side);
 				int textureWidth = wallTexture.getWidth();
 				
@@ -181,7 +181,7 @@ public class Engine {
 						texel = new Color(texel).darker().getRGB();
 					}
 					
-					if (Settings.walls == DrawMode.TEXTURED_SHADED) {
+					if (Settings.shading) {
 						texel = fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
 					}
 					
@@ -193,7 +193,7 @@ public class Engine {
 					buffer[y1*width+x] = texel;
 				}
 			
-				if (Settings.floors == DrawMode.TEXTURED || Settings.floors == DrawMode.TEXTURED_SHADED) {
+				if (Settings.floors == DrawMode.TEXTURED) {
 					double floorXWall, floorYWall;
 					if (side == 0 && rayDirX > 0) {
 						floorXWall = mapX;
@@ -252,7 +252,7 @@ public class Engine {
 						        
 						    	
 						    	if (y1 < height && floorElement.isFloorVisible()) {
-						    		if (Settings.floors == DrawMode.TEXTURED_SHADED) {
+						    		if (Settings.shading) {
 							    		floorTexel = fadeToBlack(floorTexel, (height + yShear)-y, (height + yShear)/2);
 						    		}
 						    		buffer[y1*width+x] = floorTexel; 
@@ -260,7 +260,7 @@ public class Engine {
 						    	
 						    	// second condition -> don't draw over walls
 						        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace) && floorElement.isCeilingVisible()) {
-						        	if (Settings.floors == DrawMode.TEXTURED_SHADED) {
+						        	if (Settings.shading) {
 							    		ceilingTexel = fadeToBlack(ceilingTexel, (height + yShear)-y, (height + yShear)/2);
 							    	}
 						        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
@@ -322,7 +322,7 @@ public class Engine {
 				    			
 				    			// apply effects if required
 				    			int y1 = clipVertically(y + verticalDisplace);
-				    			if (Settings.walls == DrawMode.TEXTURED_SHADED) {
+				    			if (Settings.shading) {
 				    				texel = fadeToBlack(texel, sprite.distanceToCamera, Settings.FOG_DISTANCE);
 				    			}
 				    			
@@ -376,19 +376,20 @@ public class Engine {
 			half = width * (height + yShear) / 2;
 			Arrays.fill(buffer, 0, half, Settings.CEILING_COLOUR);
 			Arrays.fill(buffer, half + 1, buffer.length, Settings.FLOOR_COLOUR);
-			break;
-		case SOLID_SHADED:
-			half = (height+yShear)/2;
-			for (int y=0; y<half; y++) {
-				int color = fadeToBlack(Settings.CEILING_COLOUR, y, half * 0.8);
-				for (int x=0; x<width; x++) {
-					buffer[y*width+x]=color;
+			
+			if (Settings.shading) {
+				half = (height+yShear)/2;
+				for (int y=0; y<half; y++) {
+					int color = fadeToBlack(Settings.CEILING_COLOUR, y, half * 0.8);
+					for (int x=0; x<width; x++) {
+						buffer[y*width+x]=color;
+					}
 				}
-			}
-			for (int y=height-1; y>half; y--) {
-				int color = fadeToBlack(Settings.FLOOR_COLOUR, y, half * 0.8);
-				for (int x=0; x<width; x++) {
-					buffer[y*width+x]=color;
+				for (int y=height-1; y>half; y--) {
+					int color = fadeToBlack(Settings.FLOOR_COLOUR, y, half * 0.8);
+					for (int x=0; x<width; x++) {
+						buffer[y*width+x]=color;
+					}
 				}
 			}
 			break;

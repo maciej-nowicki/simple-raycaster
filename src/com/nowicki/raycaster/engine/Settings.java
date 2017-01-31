@@ -5,7 +5,7 @@ import java.awt.Color;
 public class Settings {
 
 	enum DrawMode {
-		NONE, SOLID, SOLID_SHADED, TEXTURED, TEXTURED_SHADED;
+		NONE, SOLID, TEXTURED;
 		
 		public DrawMode next() {
 	        return values()[(ordinal()+1) % values().length];
@@ -33,9 +33,10 @@ public class Settings {
 	public static boolean sprites = false;
 	public static boolean showWeapon = true;
 	public static boolean textureFiltering = false;
+	public static boolean shading = true;
 	public static DrawMode floors = DrawMode.TEXTURED;
 	public static DrawMode walls = DrawMode.TEXTURED;
-	public static SkyMode sky = SkyMode.SPHERE;
+	public static SkyMode sky = SkyMode.SIMPLE;
 	
 	public static void toggleFullscreen() {
 		fullScreen = !fullScreen;
@@ -49,6 +50,10 @@ public class Settings {
 		sprites = !sprites;
 	}
 	
+	public static void toggleShading() {
+		shading = !shading;
+	}
+	
 	public static void toggleWalkingEffect() {
 		walkingEffect = !walkingEffect;
 	}
@@ -58,38 +63,11 @@ public class Settings {
 	}
 	
 	public static void toggleFloor() {
-		if (floors == DrawMode.NONE) {
-			floors = DrawMode.SOLID;
-		}
-		else if (floors == DrawMode.SOLID) {
-			floors = DrawMode.SOLID_SHADED;
-		}
-		else if (floors == DrawMode.SOLID_SHADED) {
-			floors = DrawMode.TEXTURED;
-		}
-		else if (floors == DrawMode.TEXTURED) {
-			floors = DrawMode.TEXTURED_SHADED;
-		}	
-		else {
-			floors = DrawMode.NONE;
-		}
+		floors = floors.next();
 	}
 	
 	public static void toggleWalls() {
-		if (walls == DrawMode.SOLID) {
-			walls = DrawMode.SOLID_SHADED;
-			floors = DrawMode.SOLID;
-		}
-		else if (walls == DrawMode.SOLID_SHADED) {
-			walls = DrawMode.TEXTURED;
-		}
-		else if (walls == DrawMode.TEXTURED) {
-			walls = DrawMode.TEXTURED_SHADED;
-		}	
-		else {
-			walls = DrawMode.SOLID;
-			floors = DrawMode.SOLID;
-		}
+		walls = walls.next();
 	}
 	
 	public static void toggleSky() {
