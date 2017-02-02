@@ -416,7 +416,7 @@ public class Engine {
 	
 	private void drawSkySimple(Camera camera, int yShear) {
 		Texture sky = level.getSkyTexture();
-		double tStart = sky.getWidth() / 2 * ((Math.atan2(camera.xDir, camera.yDir) / Math.PI) + 1);
+		double tStart = (double)sky.getWidth() / 0.2 * ((Math.atan2(camera.xDir + camera.xPlane, camera.yDir + camera.yPlane) / Math.PI) + 1);
 	
 		int ty = 0;
 		int texel = Color.BLACK.getRGB();
@@ -430,7 +430,7 @@ public class Engine {
 		}
 		
 		for (int y=0; y<skyHeight; y++) {
-			int tx = (int) tStart;
+			int tx = (int) tStart % sky.getWidth();
 			for (int x=0; x<width; x++) {
 				
 				if (Settings.sky == SkyMode.SIMPLE) {
@@ -439,7 +439,9 @@ public class Engine {
 					texel = sky.getPixel((double)tx++ / sky.getWidth(), (double)ty / skyHeight);
 				}
 				
-				buffer[y*width+x] = texel;
+				int y1 = clipVertically(y + (verticalDisplace / 2));
+				
+				buffer[y1*width+x] = texel;
 				
 				if (tx == sky.getWidth()) {
 					tx = 0;
