@@ -363,7 +363,7 @@ public class Engine {
 	}
 
 	private void drawLine(int x, int drawStart, int drawEnd, int color) {
-		// possible optimize: draw n (line height) pixels with step == screen width?
+		// possible optimize: draw n (line height) pixels with step == screen width
 		for (int y=drawStart; y<drawEnd; y++) {
 			buffer[y * width + x] = color;
 		}
@@ -410,6 +410,7 @@ public class Engine {
 			case SPHERE:
 				drawSkySphere(camera, yShear);
 				break;
+			default:
 		}
 		
 	}
@@ -421,11 +422,13 @@ public class Engine {
 		int ty = 0;
 		int texel = Color.BLACK.getRGB();
 		int skyHeight = sky.getHeight();
+		
+		// apply look up/down correction
 		if (Settings.sky == SkyMode.SIMPLE_STRETCHED) {
-			if (yShear > 0) {
+			if (yShear >= 0) {
 				skyHeight += yShear / 2;
-			} else if (yShear > 0) {
-				ty = yShear / 2; // TODO
+			} else {
+				ty = -yShear / 2;
 			}
 		}
 		

@@ -25,7 +25,7 @@ public class Texture {
 	}
 	
 	public int getPixel(double u, double v) {
-		return getPixel((int)(u * width), (int)(v * height));
+		return getPixel((int)(u * width) % width, (int)(v * height) % height);
 	}
 	
 	public int getPixelWithFiltering(double u, double v) {
