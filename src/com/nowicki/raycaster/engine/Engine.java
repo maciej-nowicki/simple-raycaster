@@ -1,10 +1,14 @@
 package com.nowicki.raycaster.engine;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.nowicki.raycaster.engine.Settings.DrawMode;
 import com.nowicki.raycaster.engine.Settings.SkyMode;
+import com.nowicki.raycaster.engine.shader.RainShader;
+import com.nowicki.raycaster.engine.shader.Shader;
 
 public class Engine {
 
@@ -22,17 +26,25 @@ public class Engine {
 	private Weapon weapon;
 	private long frame = 0;
 	
+	private RainShader rainShader;
+	private List<Shader> shaders = new ArrayList<Shader>();
 	
 	public Engine(int widht, int height, Weapon weapon) {
 		this.width = widht;
 		this.height = height;
 		this.weapon = weapon;
 		this.zBuffer = new double[widht];
+		
+		rainShader = new RainShader();
+		shaders.add(rainShader);
 	}
 
 	public void tick(Camera camera, double frameTime) {
 		
 		camera.update(level, frameTime);
+		
+		// update rain shader
+		rainShader.setEnabled(!level.getElement((int)camera.xPos, (int)camera.yPos).isCeilingVisible());
 
 		// look up/down amount same for every pixel
 		int yShear = (int) (height * camera.yShear);
@@ -341,6 +353,9 @@ public class Engine {
 		if (Settings.showWeapon) {
 			drawWeapon(frameTime);
 		}
+		
+		// apply enabled shaders 
+		shaders.stream().filter(s -> s.isEnabled()).forEach(shader -> shader.apply(buffer, width, height));
 		
 		frame++;
 			
