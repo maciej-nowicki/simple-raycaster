@@ -15,6 +15,8 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * texture bilinear filtering
 * different floor & ceiling textures
 * outside areas with different landsape projections
+* simple shaders concept with sample shaders
+ * rain effect in outside areas
 
 ## plans (in order of priority)
 
