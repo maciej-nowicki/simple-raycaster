@@ -26,6 +26,7 @@ public class Settings {
 	public static final double WALKING_EFFECT_SCALE = 0.015;
 	
 	public static final int FOG_DISTANCE = 15;
+	public static final int FOG_DISTANCE_FLOOR = (int) (FOG_DISTANCE * 0.75);
 	
 	public static boolean debug = false;
 	public static boolean fullScreen = false;
@@ -36,7 +37,7 @@ public class Settings {
 	public static boolean shading = true;
 	public static DrawMode floors = DrawMode.TEXTURED;
 	public static DrawMode walls = DrawMode.TEXTURED;
-	public static SkyMode sky = SkyMode.SIMPLE;
+	public static SkyMode sky = SkyMode.SIMPLE_STRETCHED;
 	
 	public static void toggleFullscreen() {
 		fullScreen = !fullScreen;

@@ -22,6 +22,7 @@ public class Engine {
 	private Weapon weapon;
 	private long frame = 0;
 	
+	
 	public Engine(int widht, int height, Weapon weapon) {
 		this.width = widht;
 		this.height = height;
@@ -36,7 +37,7 @@ public class Engine {
 		// look up/down amount same for every pixel
 		int yShear = (int) (height * camera.yShear);
 		
-		// TODO - bugfix - odd shearing amount causes texture mapping to break (revisit)
+		// odd shearing amount causes texture mapping to break
 		if (yShear % 2 != 0) {
 			yShear += (yShear < 0) ? - 1 : 1;
 		}
@@ -181,6 +182,8 @@ public class Engine {
 						texel = new Color(texel).darker().getRGB();
 					}
 					
+					// optimize - move it higher, don't apply texture mapping but put black pixel if
+					// wallDistance >= FOG_DISTANCE
 					if (Settings.shading) {
 						texel = fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
 					}
@@ -209,7 +212,7 @@ public class Engine {
 						floorYWall = mapY + 1.0;
 					}
 					
-					for (int y=drawEnd+1; y<height + Math.abs(yShear + verticalDisplace); y++) {
+					for (int y=drawEnd; y<height + Math.abs(yShear + verticalDisplace); y++) {
 						double currentDist = (height+yShear) / (2.0 * y - (height + yShear));
 		
 				        double weight = Math.abs(currentDist / (wallDistance + (wallDistance * camera.yShear)));
@@ -250,10 +253,10 @@ public class Engine {
 						    	int y1 = y + verticalDisplace;
 						    	int y2 = y - verticalDisplace;
 						        
-						    	
 						    	if (y1 < height && floorElement.isFloorVisible()) {
 						    		if (Settings.shading) {
-							    		floorTexel = fadeToBlack(floorTexel, (height + yShear)-y, (height + yShear)/2);
+								        double max = Settings.FOG_DISTANCE_FLOOR + (Settings.FOG_DISTANCE_FLOOR * camera.yShear);
+							    		floorTexel = fadeToBlack(floorTexel, currentDist , max);
 						    		}
 						    		buffer[y1*width+x] = floorTexel; 
 						    	}
@@ -261,7 +264,8 @@ public class Engine {
 						    	// second condition -> don't draw over walls
 						        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace) && floorElement.isCeilingVisible()) {
 						        	if (Settings.shading) {
-							    		ceilingTexel = fadeToBlack(ceilingTexel, (height + yShear)-y, (height + yShear)/2);
+						        		double max = Settings.FOG_DISTANCE_FLOOR + (Settings.FOG_DISTANCE_FLOOR * camera.yShear);
+							    		ceilingTexel = fadeToBlack(ceilingTexel, currentDist , max);
 							    	}
 						        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
 						        }
@@ -343,6 +347,12 @@ public class Engine {
 	}
 
 	private int fadeToBlack(int color, double current, double max) {
+		if (current < 0) {
+			return color;
+		}
+		if (current >= max) {
+			return Color.BLACK.getRGB();
+		}
 		Color c = new Color(color);
 		int r = normalize((c.getRed() * (max - current)) / max);
 		int g = normalize((c.getGreen() * (max - current)) / max);
