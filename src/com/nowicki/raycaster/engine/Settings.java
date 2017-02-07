@@ -31,7 +31,7 @@ public class Settings {
 	public static boolean debug = false;
 	public static boolean fullScreen = false;
 	public static boolean walkingEffect = false;
-	public static boolean sprites = false;
+	public static boolean sprites = true;
 	public static boolean showWeapon = true;
 	public static boolean textureFiltering = false;
 	public static boolean shading = true;

@@ -17,7 +17,7 @@ public class Level {
 	public static int DEFAULT_MAP_WIDTH = 20;
 	public static int DEFAULT_MAP_HEIGHT = 20;
 	
-	private Element[][] map;
+	private Element[][][] map;
 	private List<Sprite> sprites = new ArrayList<>();
 	
 	private Texture sky;
@@ -35,25 +35,36 @@ public class Level {
 				String [] entries = lines[j].split(",");
 				width = entries.length;
 				if (map == null) {
-					map = new Element[width][height];
+					map = new Element[Engine.FLOORS][width][height];
 				}
 				for (int i=0; i<width; i++) {
 	
-					Set<Entry> entriesSet = new HashSet<>();
 					
 					String entryId = entries[i];
-					for (int p=0; p<entryId.length(); p++) {
-						Entry entry = Entry.fromValue(entryId.charAt(p));
-						if (entry.getType() == EntryType.SPRITE) {
-							Sprite sprite = new Sprite(i + 0.5, j + 0.5, textures.get(entry));
-							sprites.add(sprite);
+					String [] floorEntries = entryId.split(";");
+					for (int f=0; f<Engine.FLOORS; f++) {
+						
+						Set<Entry> entriesSet = new HashSet<>();
+						if (floorEntries.length > f) {
+							String floorEntryId = floorEntries[f];
+							for (int p=0; p<floorEntryId.length(); p++) {
+								Entry entry = Entry.fromValue(floorEntryId.charAt(p));
+								if (entry.getType() == EntryType.SPRITE) {
+									Sprite sprite = new Sprite(i + 0.5, j + 0.5, textures.get(entry));
+									sprites.add(sprite);
+								}
+								else {
+									entriesSet.add(entry);
+								}
+							}
+							
+							map[f][i][j] = new Element(entriesSet, textures);
 						}
 						else {
-							entriesSet.add(entry);
+							entriesSet.add(Entry.EMPTY);
+							map[f][i][j] = new Element(entriesSet, textures);
 						}
 					}
-					
-					map[i][j] = new Element(entriesSet, textures);
 				}
 			}
 		} catch (IOException e) {
@@ -61,7 +72,7 @@ public class Level {
 		}
 	}
 	
-	public Element[][] getMap() {
+	public Element[][][] getMap() {
 		return map;
 	}
 	
@@ -69,19 +80,22 @@ public class Level {
 		return sprites;
 	}
 	
-	public boolean isWall(int x, int y) {
-		return map[x][y].isWall();
+	public boolean isWall(int floor, int x, int y) {
+		if (x < 0 || y < 0 || x >= width || y >= height) {
+			return true;
+		}
+		return map[floor][x][y].isWall();
 	}
 
 	public boolean isObstacle(int x, int y) {
-		return map[x][y].isObstacle();
+		return map[0][x][y].isObstacle();
 	}
 	
-	public Element getElement(int x, int y) {
+	public Element getElement(int floor, int x, int y) {
 		if (x < 0 || y < 0 || x >= width || y >= height) {
 			return null;
 		}
-		return map[x][y];
+		return map[floor][x][y];
 	}
 	
 	public Texture getSkyTexture() {
