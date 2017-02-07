@@ -9,6 +9,7 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * textured walls
 * textured floor & ceiling
 * look up / down ability
+* multiple floors (platforms)
 * shading (fog) effect
 * walking effect
 * static 2D sprites
