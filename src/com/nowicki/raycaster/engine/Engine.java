@@ -9,6 +9,7 @@ import com.nowicki.raycaster.engine.Settings.DrawMode;
 import com.nowicki.raycaster.engine.Settings.SkyMode;
 import com.nowicki.raycaster.engine.shader.RainShader;
 import com.nowicki.raycaster.engine.shader.Shader;
+import com.nowicki.raycaster.engine.shader.StormShader;
 
 public class Engine {
 	
@@ -30,6 +31,7 @@ public class Engine {
 	private long frame = 0;
 	
 	private RainShader rainShader;
+	private StormShader stormShader;
 	private List<Shader> shaders = new ArrayList<Shader>();
 	
 	public Engine(int widht, int height, Weapon weapon) {
@@ -38,7 +40,9 @@ public class Engine {
 		this.weapon = weapon;
 		this.zBuffer = new double[widht];
 		
+		stormShader = new StormShader();
 		rainShader = new RainShader();
+		shaders.add(stormShader);
 		shaders.add(rainShader);
 	}
 
@@ -46,8 +50,10 @@ public class Engine {
 		
 		camera.update(level, frameTime);
 		
-		// update rain shader - rains only if on ground floor we have no ceiling above
+		// update rain & storm shader - rains only if on ground floor we have no ceiling above
+		// storm shader disabled, because it's annoynng in the long run ;)
 		rainShader.setEnabled(!level.getElement(0, (int)camera.xPos, (int)camera.yPos).isCeilingVisible());
+		stormShader.setEnabled(false);
 
 		// look up/down amount same for every pixel
 		int yShear = (int) (height * camera.yShear);
