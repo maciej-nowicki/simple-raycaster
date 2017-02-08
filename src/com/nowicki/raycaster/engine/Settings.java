@@ -35,6 +35,7 @@ public class Settings {
 	public static boolean showWeapon = true;
 	public static boolean textureFiltering = false;
 	public static boolean shading = true;
+	public static boolean lights = true;
 	public static DrawMode floors = DrawMode.TEXTURED;
 	public static DrawMode walls = DrawMode.TEXTURED;
 	public static SkyMode sky = SkyMode.SIMPLE_STRETCHED;
@@ -49,6 +50,10 @@ public class Settings {
 	
 	public static void toggleSprites() {
 		sprites = !sprites;
+	}
+	
+	public static void toggleLights() {
+		lights = !lights;
 	}
 	
 	public static void toggleShading() {

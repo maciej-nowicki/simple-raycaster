@@ -98,6 +98,9 @@ public class KeyboardController implements KeyListener {
 		case KeyEvent.VK_T:
 			Settings.toggleTextureFiltering();
 			break;
+		case KeyEvent.VK_L:
+			Settings.toggleLights();
+			break;
 		case KeyEvent.VK_E:
 			Settings.toggleShading();
 			break;

@@ -7,7 +7,7 @@ import java.util.Set;
 public class Element {
 
 	public enum EntryType {
-		EMPTY, INACCESSIBLE, WALL, FLOOR, CEILING, SPRITE, SKY;
+		EMPTY, INACCESSIBLE, WALL, FLOOR, CEILING, SPRITE, SKY, LIGHT;
 	};
 	
 	public enum Entry {
@@ -35,6 +35,9 @@ public class Element {
 		BARREL('b', EntryType.SPRITE, true, null),
 		PILLAR('p', EntryType.SPRITE, true, null),
 		CEILING_LAMP('l', EntryType.SPRITE, true, null),
+		
+		// lights
+		FLOOR_SPOTLIGHT('*', EntryType.LIGHT, true, Color.WHITE),
 		
 		// special
 		SKY('-', EntryType.SKY, true, null);

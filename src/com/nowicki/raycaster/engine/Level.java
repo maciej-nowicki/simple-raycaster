@@ -1,5 +1,6 @@
 package com.nowicki.raycaster.engine;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,6 +20,7 @@ public class Level {
 	
 	private Element[][][] map;
 	private List<Sprite> sprites = new ArrayList<>();
+	private List<LightSource> lights = new ArrayList<>();
 	
 	private Texture sky;
 	private int width;
@@ -52,6 +54,9 @@ public class Level {
 								if (entry.getType() == EntryType.SPRITE) {
 									Sprite sprite = new Sprite(i + 0.5, j + 0.5, textures.get(entry));
 									sprites.add(sprite);
+								} else if (entry.getType() == EntryType.LIGHT) {
+									LightSource light = new LightSource(i + 0.5, j + 0.5, new Color(entry.getColor(1)));
+									lights.add(light);
 								}
 								else {
 									entriesSet.add(entry);
