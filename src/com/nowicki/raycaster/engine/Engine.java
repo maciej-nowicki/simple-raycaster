@@ -199,6 +199,7 @@ public class Engine {
 					u = (int) (wallX * textureWidth) % textureWidth;
 					
 					for (int y=drawStart; y<drawEnd; y++) {
+						wallY = ((((double)y*2 - (height + yShear) + lineHeight)) / lineHeight) / 2;
 						
 						int texel;
 						if (!Settings.textureFiltering) {
@@ -210,7 +211,6 @@ public class Engine {
 							texel = wallTexture.getPixel(u, v);
 						}
 						else {
-							wallY = ((((double)y*2 - (height + yShear) + lineHeight)) / lineHeight) / 2;
 							wallY = Math.abs(wallY);
 							wallY -= Math.floor(wallY);
 							
@@ -295,10 +295,22 @@ public class Engine {
 								    	int y2 = y - verticalDisplace;
 								        
 								    	if (y1 < height && floorElement.isFloorVisible()) {
+								    		
 								    		if (Settings.shading) {
 										        double max = Settings.FOG_DISTANCE_FLOOR + (Settings.FOG_DISTANCE_FLOOR * camera.yShear);
-									    		floorTexel = fadeToBlack(floorTexel, currentDist , max);
+									    		int originalTexel = floorTexel;
+										        floorTexel = fadeToBlack(floorTexel, currentDist , max);
+									    		
+									    		if (Settings.lights) {
+									    			for (Light light : level.getLights()) {
+									    				double intensity = light.getIntensity(floorX, floorY);
+									    				if (intensity > 0) {
+									    					floorTexel = GraphicsHelper.mixColors(floorTexel, originalTexel, intensity);
+									    				}
+									    			}
+									    		}
 								    		}
+								    		
 								    		buffer[y1*width+x] = floorTexel; 
 								    	}
 								    	

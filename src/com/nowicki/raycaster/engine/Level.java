@@ -20,7 +20,7 @@ public class Level {
 	
 	private Element[][][] map;
 	private List<Sprite> sprites = new ArrayList<>();
-	private List<LightSource> lights = new ArrayList<>();
+	private List<Light> lights = new ArrayList<>();
 	
 	private Texture sky;
 	private int width;
@@ -55,7 +55,7 @@ public class Level {
 									Sprite sprite = new Sprite(i + 0.5, j + 0.5, textures.get(entry));
 									sprites.add(sprite);
 								} else if (entry.getType() == EntryType.LIGHT) {
-									LightSource light = new LightSource(i + 0.5, j + 0.5, new Color(entry.getColor(1)));
+									Light light = new Light(i + 0.5, j + 0.5, new Color(entry.getColor(1)));
 									lights.add(light);
 								}
 								else {
@@ -75,6 +75,13 @@ public class Level {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		// move lights to walls
+		for (Light light : lights) {
+			if (isWall(0, (int)light.xPosition, (int)light.yPosition)) {
+				light.yPosition = 0.5;
+			}
+		}
 	}
 	
 	public Element[][][] getMap() {
@@ -85,6 +92,10 @@ public class Level {
 		return sprites;
 	}
 	
+	public List<Light> getLights() {
+		return lights;
+	}
+
 	public boolean isWall(int floor, int x, int y) {
 		if (x < 0 || y < 0 || x >= width || y >= height) {
 			return true;

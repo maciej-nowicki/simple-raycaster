@@ -2,6 +2,8 @@ package com.nowicki.raycaster.engine.shader;
 
 import java.awt.Color;
 
+import com.nowicki.raycaster.engine.GraphicsHelper;
+
 public class RainShader extends AbstarctShader {
 	
 	public static final Color RAIN_COLOR = Color.LIGHT_GRAY;
@@ -19,7 +21,7 @@ public class RainShader extends AbstarctShader {
 				for (int j=0; j<dropLenght; j++) {
 					int ptr = i + (j*width);
 					if (ptr < buffer.length) {
-						buffer[ptr] = mixColors(new Color(buffer[ptr]), RAIN_COLOR, dropOpacity);
+						buffer[ptr] = GraphicsHelper.mixColors(new Color(buffer[ptr]), RAIN_COLOR, dropOpacity);
 					}
 				}
 			}

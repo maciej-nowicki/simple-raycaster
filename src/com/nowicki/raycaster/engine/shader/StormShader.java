@@ -2,6 +2,8 @@ package com.nowicki.raycaster.engine.shader;
 
 import java.awt.Color;
 
+import com.nowicki.raycaster.engine.GraphicsHelper;
+
 public class StormShader extends AbstarctShader {
 
 	
@@ -33,7 +35,7 @@ public class StormShader extends AbstarctShader {
 		
 		if (displayingLightning) {
 			for (int i=0; i<buffer.length; i++) {
-				buffer[i] = mixColors(new Color(buffer[i]), LIGHTNING_COLOR, LIGHTNING_INTENSITY_SEQUENCE[frame]);
+				buffer[i] = GraphicsHelper.mixColors(new Color(buffer[i]), LIGHTNING_COLOR, LIGHTNING_INTENSITY_SEQUENCE[frame]);
 			}
 			
 			if (++frame == LIGHTNING_EFFECT_LENGTH_IN_FRAMES) {
