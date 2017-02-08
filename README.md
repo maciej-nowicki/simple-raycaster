@@ -43,6 +43,7 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * A - center look
 * W - toggle wall rendering method
 * F - toggle floor/ceiling rendering method
+* L - lights on/off
 * E - shading on/off
 * H - toggle landsape rendering mode
 * S - walking effect on/off
