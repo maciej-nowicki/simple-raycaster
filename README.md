@@ -11,6 +11,7 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * look up / down ability
 * multiple floors (platforms)
 * shading (fog) effect
+* simple lights effect
 * walking effect
 * static 2D sprites
 * texture bilinear filtering
@@ -18,6 +19,7 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * outside areas with different landsape projections
 * simple shaders concept with sample shaders
  * rain effect in outside areas
+ * storm lightnings in outside areas
 
 ## plans (in order of priority)
 
@@ -26,7 +28,6 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * opacity
 * mipmapping 
 * thin walls
-* lightning effecects
 * more than one texture on wall (like in DOOM)
 * configurable controls, display, etc.
 * clean code
