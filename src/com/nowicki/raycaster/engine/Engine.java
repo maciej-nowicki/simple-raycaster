@@ -284,11 +284,11 @@ public class Engine {
 										    ceilingTexel = ceilingTexture.getPixel(u, v); 
 								        } else {
 								        	
-								        	floorX -= Math.floor(floorX);
-									        floorY -= Math.floor(floorY);
+								        	double tx = floorX - Math.floor(floorX);
+									        double ty = floorY - Math.floor(floorY);
 								        	
-								        	floorTexel = floorTexture.getPixelWithFiltering(floorX, floorY);
-									        ceilingTexel = ceilingTexture.getPixelWithFiltering(floorX, floorY); 
+								        	floorTexel = floorTexture.getPixelWithFiltering(tx, ty);
+									        ceilingTexel = ceilingTexture.getPixelWithFiltering(tx, ty); 
 								        }
 								        
 								    	int y1 = y + verticalDisplace;
