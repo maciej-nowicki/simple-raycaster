@@ -1,6 +1,7 @@
 package com.nowicki.raycaster.engine;
 
 import java.awt.Color;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,7 +38,10 @@ public class Element {
 		CEILING_LAMP('l', EntryType.SPRITE, true, null),
 		
 		// lights
-		FLOOR_SPOTLIGHT('*', EntryType.LIGHT, true, Color.WHITE),
+		FLOOR_SPOTLIGHT('*', EntryType.LIGHT, true, Color.WHITE, "location=floor"),
+		WALL_SPOTLIGHT('#', EntryType.LIGHT, true, Color.WHITE, "location=wall;radius=0.4"),
+		WALL_SPOTLIGHT_LARGE('$', EntryType.LIGHT, true, Color.WHITE, "location=wall;radius=0.6"),
+		ALL_SPOTLIGHT_LARGE('@', EntryType.LIGHT, true, Color.WHITE, "location=all;radius=1.8"),
 		
 		// special
 		SKY('-', EntryType.SKY, true, null);
@@ -47,6 +51,7 @@ public class Element {
 		private boolean visible;
 		private int color;
 		private int colorDarker;
+		private Map<String, String> properties = new HashMap<>();
 		
 		private Entry(char id, EntryType type, boolean visible, Color color) {
 			this.id = id;
@@ -56,6 +61,18 @@ public class Element {
 				this.color = color.getRGB();
 				this.colorDarker = new Color((int) (color.getRed() * 0.9), (int) (color.getGreen() * 0.9),
 						(int) (color.getBlue() * 0.9)).getRGB();
+			}
+		}
+		
+		private Entry(char id, EntryType type, boolean visible, Color color, String properties) {
+			this(id, type, visible, color);
+			if (properties != null) {
+				String [] entries = properties.split(";");
+				for (String entry : entries) {
+					String key = entry.split("=")[0].trim();
+					String value = entry.split("=")[1].trim();
+					this.properties.put(key, value);
+				}
 			}
 		}
 
@@ -71,6 +88,29 @@ public class Element {
 			return visible;
 		}
 		
+		public boolean hasProperty(String propertyName) {
+			return properties.containsKey(propertyName);
+		}
+		
+		public String getProperty(String propertyName) {
+			return properties.get(propertyName);
+		}
+		
+		public String getProperty(String propertyName, String defaultValue) {
+			String value = getProperty(propertyName);
+			return (value != null) ? value : defaultValue;
+		}
+		
+		public Double getDoubleProperty(String propertyName) {
+			String value = getProperty(propertyName);
+			return (value != null) ? Double.valueOf(value) : null;
+		}
+		
+		public Double getDoubleProperty(String propertyName, Double defaultValue) {
+			Double value = getDoubleProperty(propertyName);
+			return (value != null) ? value : defaultValue;
+		}
+		
 		public static Entry fromValue(char id) {
 			for (Entry entry : values()) {
 				if (id == entry.id) {
@@ -79,6 +119,7 @@ public class Element {
 			}
 			return null;
 		}
+		
 	};
 	
 	private boolean obstacle = false;

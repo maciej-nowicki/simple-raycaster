@@ -12,6 +12,7 @@ import java.util.Set;
 
 import com.nowicki.raycaster.engine.Element.Entry;
 import com.nowicki.raycaster.engine.Element.EntryType;
+import com.nowicki.raycaster.engine.Light.LightLocation;
 
 public class Level {
 
@@ -52,11 +53,9 @@ public class Level {
 							for (int p=0; p<floorEntryId.length(); p++) {
 								Entry entry = Entry.fromValue(floorEntryId.charAt(p));
 								if (entry.getType() == EntryType.SPRITE) {
-									Sprite sprite = new Sprite(i + 0.5, j + 0.5, textures.get(entry));
-									sprites.add(sprite);
+									addSprite(textures.get(entry), i, j);
 								} else if (entry.getType() == EntryType.LIGHT) {
-									Light light = new Light(i + 0.5, j + 0.5, new Color(entry.getColor(1)));
-									lights.add(light);
+									addLight(entry, i, j);
 								}
 								else {
 									entriesSet.add(entry);
@@ -75,13 +74,35 @@ public class Level {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void addLight(Entry entry, int i, int j) {
+		Light light = new Light(i + 0.5, j + 0.5, new Color(entry.getColor(1)));
 		
-		// move lights to walls
-		for (Light light : lights) {
-			if (isWall(0, (int)light.xPosition, (int)light.yPosition)) {
-				light.yPosition = 0.5;
+		if (entry.hasProperty("location")) {
+			switch (entry.getProperty("location")) {
+			case "wall":
+				light.setLocation(LightLocation.WALL);
+				break;
+			case "floor":
+				light.setLocation(LightLocation.FLOOR);
+				break;
+			case "all":
+				light.setLocation(LightLocation.ALL);
+				break;
 			}
 		}
+		
+		if (entry.hasProperty("radius")) {
+			light.setRadius(entry.getDoubleProperty("radius"));
+		}
+		
+		lights.add(light);
+	}
+	
+	private void addSprite(Texture texture, int i, int j) {
+		Sprite sprite = new Sprite(i + 0.5, j + 0.5, texture);
+		sprites.add(sprite);
 	}
 	
 	public Element[][][] getMap() {

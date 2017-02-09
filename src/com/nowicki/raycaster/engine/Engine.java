@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.nowicki.raycaster.engine.Light.LightLocation;
 import com.nowicki.raycaster.engine.Settings.DrawMode;
 import com.nowicki.raycaster.engine.Settings.SkyMode;
 import com.nowicki.raycaster.engine.shader.RainShader;
@@ -201,6 +202,12 @@ public class Engine {
 					for (int y=drawStart; y<drawEnd; y++) {
 						wallY = ((((double)y*2 - (height + yShear) + lineHeight)) / lineHeight) / 2;
 						
+						while (wallY < 0) {
+							wallY++;
+						}
+						wallY -= Math.floor(wallY);
+						
+						
 						int texel;
 						if (!Settings.textureFiltering) {
 							v = (((y*2 - (height + yShear) + lineHeight) * textureWidth) / lineHeight) / 2;
@@ -211,11 +218,6 @@ public class Engine {
 							texel = wallTexture.getPixel(u, v);
 						}
 						else {
-							while (wallY < 0) {
-								wallY++;
-							}
-							wallY -= Math.floor(wallY);
-							
 							texel = wallTexture.getPixelWithFiltering(wallX, wallY);
 						}
 						
@@ -227,7 +229,20 @@ public class Engine {
 						// optimize - move it higher, don't apply texture mapping but put black pixel if
 						// wallDistance >= FOG_DISTANCE
 						if (Settings.shading) {
-							texel = fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
+							int shadedTexel = fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
+							
+							if (Settings.lights) {
+				    			for (Light light : level.getLights()) {
+				    				if (light.getLocation() == LightLocation.WALL || light.getLocation() == LightLocation.ALL) {
+					    				double intensity = light.getIntensity((double)mapX + wallX, (double)mapY + wallY);
+					    				if (intensity > 0) {
+					    					shadedTexel = GraphicsHelper.mixColors(shadedTexel, texel, intensity);
+					    				}
+				    				}
+				    			}
+				    		}
+							
+							texel = shadedTexel;
 						}
 						
 						int y1 = y;
@@ -300,17 +315,20 @@ public class Engine {
 								    		
 								    		if (Settings.shading) {
 										        double max = Settings.FOG_DISTANCE_FLOOR + (Settings.FOG_DISTANCE_FLOOR * camera.yShear);
-									    		int originalTexel = floorTexel;
-										        floorTexel = fadeToBlack(floorTexel, currentDist , max);
+									    		int shadedTexel = fadeToBlack(floorTexel, currentDist , max);
 									    		
 									    		if (Settings.lights) {
 									    			for (Light light : level.getLights()) {
-									    				double intensity = light.getIntensity(floorX, floorY);
-									    				if (intensity > 0) {
-									    					floorTexel = GraphicsHelper.mixColors(floorTexel, originalTexel, intensity);
+									    				if (light.getLocation() == LightLocation.FLOOR || light.getLocation() == LightLocation.ALL) {
+										    				double intensity = light.getIntensity(floorX, floorY);
+										    				if (intensity > 0) {
+										    					shadedTexel = GraphicsHelper.mixColors(shadedTexel, floorTexel, intensity);
+										    				}
 									    				}
 									    			}
 									    		}
+									    		
+									    		floorTexel = shadedTexel;
 								    		}
 								    		
 								    		buffer[y1*width+x] = floorTexel; 
@@ -320,7 +338,20 @@ public class Engine {
 								        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace) && floorElement.isCeilingVisible()) {
 								        	if (Settings.shading) {
 								        		double max = Settings.FOG_DISTANCE_FLOOR + (Settings.FOG_DISTANCE_FLOOR * camera.yShear);
-									    		ceilingTexel = fadeToBlack(ceilingTexel, currentDist , max);
+									    		int shadedTexel = fadeToBlack(ceilingTexel, currentDist , max);
+									    		
+									    		if (Settings.lights) {
+									    			for (Light light : level.getLights()) {
+									    				if (light.getLocation() == LightLocation.CEILING || light.getLocation() == LightLocation.ALL) {
+										    				double intensity = light.getIntensity(floorX, floorY);
+										    				if (intensity > 0) {
+										    					shadedTexel = GraphicsHelper.mixColors(shadedTexel, ceilingTexel, intensity);
+										    				}
+									    				}
+									    			}
+									    		}
+									    		
+									    		ceilingTexel = shadedTexel;
 									    	}
 								        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
 								        }
