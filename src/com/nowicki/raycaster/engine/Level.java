@@ -97,6 +97,10 @@ public class Level {
 			light.setRadius(entry.getDoubleProperty("radius"));
 		}
 		
+		if (entry.hasProperty("intensity")) {
+			light.setIntensity(entry.getDoubleProperty("intensity"));
+		}
+		
 		lights.add(light);
 	}
 	

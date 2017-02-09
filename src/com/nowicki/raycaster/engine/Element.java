@@ -40,6 +40,7 @@ public class Element {
 		// lights
 		FLOOR_SPOTLIGHT('*', EntryType.LIGHT, true, Color.WHITE, "location=floor"),
 		WALL_SPOTLIGHT('#', EntryType.LIGHT, true, Color.WHITE, "location=wall;radius=0.4"),
+		WALL_SPOTLIGHT_INTENSE('%', EntryType.LIGHT, true, Color.WHITE, "location=wall;radius=0.4;intensity=1.2"),
 		WALL_SPOTLIGHT_LARGE('$', EntryType.LIGHT, true, Color.WHITE, "location=wall;radius=0.6"),
 		ALL_SPOTLIGHT_LARGE('@', EntryType.LIGHT, true, Color.WHITE, "location=all;radius=1.8"),
 		
@@ -128,7 +129,6 @@ public class Element {
 	private int color;
 	private int colorDarker;
 	private Texture texture;
-	private Texture textureDarker;
 	
 	private boolean floorVisible = true;
 	private Texture floorTexture;
