@@ -211,7 +211,9 @@ public class Engine {
 							texel = wallTexture.getPixel(u, v);
 						}
 						else {
-							wallY = Math.abs(wallY);
+							while (wallY < 0) {
+								wallY++;
+							}
 							wallY -= Math.floor(wallY);
 							
 							texel = wallTexture.getPixelWithFiltering(wallX, wallY);
