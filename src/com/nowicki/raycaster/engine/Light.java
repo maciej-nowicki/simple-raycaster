@@ -24,6 +24,9 @@ public class Light {
 	// lighht center intensity
 	double intensity = 0.8;
 
+	// amount of frames light will go out - used for dynamic lights
+	private double vanishTimeInFrames = Integer.MAX_VALUE;
+
 	public Light(double xPosition, double yPosition, Color color) {
 		this.xPosition = xPosition;
 		this.yPosition = yPosition;
@@ -36,6 +39,18 @@ public class Light {
 			return 0;
 		}
 		return intensity * ((radius - distance) / radius);
+	}
+	
+	public void setVanishTimeInFrames(double vanishTimeInFrames) {
+		this.vanishTimeInFrames = vanishTimeInFrames;
+	}
+
+	public void adjustVanisTime(double frameTime) {
+		vanishTimeInFrames -= frameTime;
+	}
+	
+	public boolean isVisible() {
+		return vanishTimeInFrames >= 0;
 	}
 	
 	public double getRadius() {

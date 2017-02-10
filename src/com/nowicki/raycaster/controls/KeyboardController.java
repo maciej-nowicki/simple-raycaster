@@ -76,6 +76,7 @@ public class KeyboardController implements KeyListener {
 			break;
 		case KeyEvent.VK_CONTROL:
 			engine.getWeapon().setShooting(true);
+			engine.addShotLightEffects();
 			break;
 		case KeyEvent.VK_D:
 			Settings.debug = !Settings.debug;

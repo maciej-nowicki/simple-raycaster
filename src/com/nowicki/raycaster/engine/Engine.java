@@ -3,6 +3,7 @@ package com.nowicki.raycaster.engine;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import com.nowicki.raycaster.engine.Light.LightLocation;
@@ -35,6 +36,8 @@ public class Engine {
 	private StormShader stormShader;
 	private List<Shader> shaders = new ArrayList<Shader>();
 	
+	private boolean addShootLightEffects = false;
+	
 	public Engine(int widht, int height, Weapon weapon) {
 		this.width = widht;
 		this.height = height;
@@ -50,6 +53,9 @@ public class Engine {
 	public void tick(Camera camera, double frameTime) {
 		
 		camera.update(level, frameTime);
+		
+		// update lights
+		updateLights(frameTime);
 		
 		// update rain & storm shader - rains only if on ground floor we have no ceiling above
 		// storm shader disabled, because it's annoying in the long run ;)
@@ -235,6 +241,17 @@ public class Engine {
 							int shadedTexel = GraphicsHelper.fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
 							
 							if (Settings.lights) {
+								
+								if (addShootLightEffects && x == width/2) {
+									Light light = new Light((double)mapX + wallX, (double)mapY + 0.5, Color.WHITE);
+									light.setLocation(LightLocation.WALL);
+									light.setRadius(0.3);
+									light.setIntensity(0.7);
+									light.setVanishTimeInFrames(5);
+									level.getLights().add(light);
+									addShootLightEffects = false;
+								}
+								
 				    			for (Light light : level.getLights()) {
 				    				if (light.getLocation() == LightLocation.WALL || light.getLocation() == LightLocation.ALL) {
 					    				double intensity = light.getIntensity((double)mapX + wallX, (double)mapY + wallY);
@@ -437,6 +454,26 @@ public class Engine {
 			
 	}
 
+	private void updateLights(double frameTime) {
+		
+		if (!Settings.lights) {
+			return;
+		}
+		
+		Iterator<Light> it = level.getLights().iterator();
+		while (it.hasNext()) {
+			Light light = it.next();
+			light.adjustVanisTime(frameTime);
+			if (!light.isVisible()) {
+				it.remove();
+			}
+		}
+		
+		if (addShootLightEffects) {
+			
+		}
+	}
+
 	private int clipHorizontally(int x) {
 		return (x >= width) ? width-1 : (x < 0) ? 0 : x;
 	}
@@ -567,7 +604,12 @@ public class Engine {
 				}
 			}
 		}
-
+	}
+	
+	public void addShotLightEffects() {
+		if (Settings.lights) {
+			addShootLightEffects = true;
+		}
 	}
 	
 	private void drawWeapon(double frameSkip) {
@@ -608,5 +650,6 @@ public class Engine {
 	public Weapon getWeapon() {
 		return weapon;
 	}
+
 
 }
