@@ -1,9 +1,12 @@
 # simple-raycaster
 Java implementation of simple fpp engine using raycasting technique.
 
+![engine](https://cloud.githubusercontent.com/assets/10894118/22842289/fde51cf8-efd4-11e6-9c9d-df0cb147e7d0.png)
+
 This simple engine uses the same technique, which was used in famous Wolfenstein 3D, with some effects added by me. 
 Raycasting is known to be very fast, so Wolf worked fine on 286/386 in 320 x 200. 
-My engine is written 100% in Java and uses software rendering, so the speed... Well, it is still 50 fps in 640 x 400 on my Core i7 ;)
+
+My engine is written 100% in Java and uses software rendering, so the speed... Well, it is still 50 fps in 640 x 400 on my Core i7 ;) Well, with the lights effects turned off - lights are _very_ slow, because they are actually calculated, not faked in any way.
 
 ## engine features
 * textured walls
@@ -20,6 +23,7 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * simple shaders concept with sample shaders
  * rain effect in outside areas
  * storm lightnings in outside areas
+* **EXPERIMENTAL** multithreaded concurrent frame rendering
 
 ## plans (in order of priority)
 
