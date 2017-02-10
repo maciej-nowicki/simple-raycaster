@@ -52,12 +52,15 @@ public class Engine {
 		camera.update(level, frameTime);
 		
 		// update rain & storm shader - rains only if on ground floor we have no ceiling above
-		// storm shader disabled, because it's annoynng in the long run ;)
+		// storm shader disabled, because it's annoying in the long run ;)
 		rainShader.setEnabled(!level.getElement(0, (int)camera.xPos, (int)camera.yPos).isCeilingVisible());
 		stormShader.setEnabled(false);
 
 		// look up/down amount same for every pixel
 		int yShear = (int) (height * camera.yShear);
+		
+		// floor/ceiling shade distance adjusted wuth ySher -identical for every column
+		double floorShadeDistance = Settings.FOG_DISTANCE_FLOOR + (Settings.FOG_DISTANCE_FLOOR * camera.yShear);
 		
 		// odd shearing amount causes texture mapping to break
 		if (yShear % 2 != 0) {
@@ -180,7 +183,7 @@ public class Engine {
 					int color = element.getColor(side);
 					
 					if (Settings.shading) {
-						color = fadeToBlack(color, wallDistance, Settings.FOG_DISTANCE);
+						color = GraphicsHelper.fadeToBlack(color, wallDistance, Settings.FOG_DISTANCE);
 					}
 					
 					if (Settings.walkingEffect) {
@@ -229,7 +232,7 @@ public class Engine {
 						// optimize - move it higher, don't apply texture mapping but put black pixel if
 						// wallDistance >= FOG_DISTANCE
 						if (Settings.shading) {
-							int shadedTexel = fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
+							int shadedTexel = GraphicsHelper.fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
 							
 							if (Settings.lights) {
 				    			for (Light light : level.getLights()) {
@@ -314,8 +317,7 @@ public class Engine {
 								    	if (y1 < height && floorElement.isFloorVisible()) {
 								    		
 								    		if (Settings.shading) {
-										        double max = Settings.FOG_DISTANCE_FLOOR + (Settings.FOG_DISTANCE_FLOOR * camera.yShear);
-									    		int shadedTexel = fadeToBlack(floorTexel, currentDist , max);
+									    		int shadedTexel = GraphicsHelper.fadeToBlack(floorTexel, currentDist, floorShadeDistance);
 									    		
 									    		if (Settings.lights) {
 									    			for (Light light : level.getLights()) {
@@ -337,8 +339,7 @@ public class Engine {
 								    	// second condition -> don't draw over walls
 								        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace) && floorElement.isCeilingVisible()) {
 								        	if (Settings.shading) {
-								        		double max = Settings.FOG_DISTANCE_FLOOR + (Settings.FOG_DISTANCE_FLOOR * camera.yShear);
-									    		int shadedTexel = fadeToBlack(ceilingTexel, currentDist , max);
+									    		int shadedTexel = GraphicsHelper.fadeToBlack(ceilingTexel, currentDist , floorShadeDistance);
 									    		
 									    		if (Settings.lights) {
 									    			for (Light light : level.getLights()) {
@@ -382,8 +383,8 @@ public class Engine {
 				
 				// transform - multiply by inversion of camera matrix. TODO - move to sprite class?
 				double invDet = 1.0 / (camera.xPlane * camera.yDir - camera.xDir * camera.yPlane);
-			    sprite.xTransformed = invDet * (camera.yDir * spriteX - camera.xDir * spriteY);
-			    sprite.yTransformed = invDet * (-camera.yPlane * spriteX + camera.xPlane * spriteY);
+				sprite.xTransformed = invDet * (camera.yDir * spriteX - camera.xDir * spriteY);
+				sprite.yTransformed = invDet * (-camera.yPlane * spriteX + camera.xPlane * spriteY);
 			
 			    // center point of the sprite on screen and its height
 			    int spriteScreenX = (int) ((width / 2) * (1 + sprite.xTransformed  / sprite.yTransformed));
@@ -414,7 +415,7 @@ public class Engine {
 				    			// apply effects if required
 				    			int y1 = clipVertically(y + verticalDisplace);
 				    			if (Settings.shading) {
-				    				texel = fadeToBlack(texel, sprite.distanceToCamera, Settings.FOG_DISTANCE);
+				    				texel = GraphicsHelper.fadeToBlack(texel, sprite.distanceToCamera, Settings.FOG_DISTANCE);
 				    			}
 				    			
 				    			buffer[y1*width+x] = texel;
@@ -436,24 +437,6 @@ public class Engine {
 			
 	}
 
-	private int fadeToBlack(int color, double current, double max) {
-		if (current < 0) {
-			return color;
-		}
-		if (current >= max) {
-			return Color.BLACK.getRGB();
-		}
-		Color c = new Color(color);
-		int r = normalize((c.getRed() * (max - current)) / max);
-		int g = normalize((c.getGreen() * (max - current)) / max);
-		int b = normalize((c.getBlue() * (max - current)) / max);
-		return new Color(r, g, b).getRGB();
-	}
-
-	private int normalize(double value) {
-		return (value > 255) ? 255 : (value < 0) ? 0 : (int) value;
-	}
-	
 	private int clipHorizontally(int x) {
 		return (x >= width) ? width-1 : (x < 0) ? 0 : x;
 	}
@@ -470,23 +453,22 @@ public class Engine {
 	}
 	
 	private void drawCeilingAndFloor(Camera camera, int yShear) {
-		int half;
 		switch (Settings.floors) {
 		case SOLID:
-			half = width * (height + yShear) / 2;
+			int half = width * (height + yShear) / 2;
 			Arrays.fill(buffer, 0, half, Settings.CEILING_COLOUR);
 			Arrays.fill(buffer, half + 1, buffer.length, Settings.FLOOR_COLOUR);
 			
 			if (Settings.shading) {
 				half = (height+yShear)/2;
 				for (int y=0; y<half; y++) {
-					int color = fadeToBlack(Settings.CEILING_COLOUR, y, half * 0.8);
+					int color = GraphicsHelper.fadeToBlack(Settings.CEILING_COLOUR, y, half * 0.8);
 					for (int x=0; x<width; x++) {
 						buffer[y*width+x]=color;
 					}
 				}
 				for (int y=height-1; y>half; y--) {
-					int color = fadeToBlack(Settings.FLOOR_COLOUR, y, half * 0.8);
+					int color = GraphicsHelper.fadeToBlack(Settings.FLOOR_COLOUR, y, half * 0.8);
 					for (int x=0; x<width; x++) {
 						buffer[y*width+x]=color;
 					}
