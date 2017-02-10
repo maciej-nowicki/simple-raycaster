@@ -56,11 +56,11 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		loadTextures();
 		loadWeapons();
 		Level level = new Level("data/raycaster/level.txt", textures);
+		camera = new Camera(3, 10);
 		
-		engine = new Engine(WIDTH, HEIGHT, weapon);
+		engine = new Engine(WIDTH, HEIGHT, camera, weapon);
 		engine.setLevel(level);
 		
-		camera = new Camera(3, 10);
 		
 		keyboardController = new KeyboardController(engine, camera, this);
 		addKeyListener(keyboardController);
@@ -127,7 +127,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 			
 			start = System.nanoTime();
 	
-			engine.tick(camera, frameTime);
+			engine.tick(frameTime);
 			drawFrame();
 			
 			diff = System.nanoTime() - start;

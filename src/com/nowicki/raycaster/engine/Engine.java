@@ -5,6 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import com.nowicki.raycaster.engine.Light.LightLocation;
 import com.nowicki.raycaster.engine.Settings.DrawMode;
@@ -17,6 +22,8 @@ public class Engine {
 	
 	// number of floors - vertical elements one on another
 	public static final int FLOORS = 3;
+	
+	public static final int THREADS = 4;
 
 	private int[] buffer;
 	private double[] zBuffer;
@@ -24,6 +31,8 @@ public class Engine {
 
 	private int width;
 	private int height;
+	
+	private Camera camera;
 
 	private double movement = 0;
 	private int verticalDisplace = 0;
@@ -37,10 +46,12 @@ public class Engine {
 	private List<Shader> shaders = new ArrayList<Shader>();
 	
 	private boolean addShootLightEffects = false;
+	ExecutorService executor;
 	
-	public Engine(int widht, int height, Weapon weapon) {
+	public Engine(int widht, int height, Camera camera, Weapon weapon) {
 		this.width = widht;
 		this.height = height;
+		this.camera = camera;
 		this.weapon = weapon;
 		this.zBuffer = new double[widht];
 		
@@ -48,9 +59,39 @@ public class Engine {
 		rainShader = new RainShader();
 		shaders.add(stormShader);
 		shaders.add(rainShader);
+		
+		executor = Executors.newFixedThreadPool(THREADS);
+	}
+	
+	public class ColumnDrawer implements Runnable {
+
+		private int start;
+		private int step;
+		private int yShear;
+		private double floorShadeDistance;
+		private CountDownLatch countDownLatch;
+
+		public ColumnDrawer(int start, int step, int yShear, double floorShadeDistance, CountDownLatch countDownLatch) {
+			this.start = start;
+			this.step = step;
+			this.yShear = yShear;
+			this.floorShadeDistance = floorShadeDistance;
+			this.countDownLatch = countDownLatch;
+		}
+		
+		@Override
+		public void run() {
+			for (int floor=FLOORS-1; floor>=0; floor--) {
+				for (int x=start; x<width; x+=step) {
+					drawColumn(x, floor, yShear, floorShadeDistance);
+				}
+			}
+			countDownLatch.countDown();
+		}
+		
 	}
 
-	public void tick(Camera camera, double frameTime) {
+	public void tick(double frameTime) {
 		
 		camera.update(level, frameTime);
 		
@@ -86,301 +127,15 @@ public class Engine {
 			verticalDisplace = 0;
 		}
 		
-		// level can consist of FLOORS (3), draw up to down
-		// floors, ceiling and sprites applied only to ground floor
-		for (int floor=FLOORS-1; floor>=0; floor--) {
-			
-			for (int x=0; x<width; x++) {
-				double cameraX = 2 * (x) / (double)(width) - 1; // in <-1, 1> coordinates
-				double rayDirX = camera.xDir + camera.xPlane * cameraX;
-				double rayDirY = camera.yDir + camera.yPlane * cameraX;
-			
-				// where are we on the map?
-				int mapX = (int) camera.xPos;
-				int mapY = (int) camera.yPos;
-				
-				double sideDistX;
-				double sideDistY;
-				
-				// length of ray from one x or y-side to next x or y-side
-				double deltaDistX = Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
-				double deltaDistY = Math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
-				double wallDistance;
-	
-				// what direction to step in x or y-direction (either +1 or -1)
-				int stepX;
-				int stepY;
-	
-				boolean hit = false; 
-				int side = 0; // was a NS or a EW wall hit?
-				
-				// calculate step and initial sideDist
-				if (rayDirX < 0) {
-					stepX = -1;
-					sideDistX = (camera.xPos - mapX) * deltaDistX;
-				} else {
-					stepX = 1;
-					sideDistX = (mapX + 1.0 - camera.xPos) * deltaDistX;
-				}
-				if (rayDirY < 0) {
-					stepY = -1;
-					sideDistY = (camera.yPos - mapY) * deltaDistY;
-				} else {
-					stepY = 1;
-					sideDistY = (mapY + 1.0 - camera.yPos) * deltaDistY;
-				}
-				
-				while (!hit) {
-					// jump to next map square, OR in x-direction, OR in y-direction
-					if (sideDistX < sideDistY) {
-						sideDistX += deltaDistX;
-						mapX += stepX;
-						side = 0; // x axis wall
-					} else {
-						sideDistY += deltaDistY;
-						mapY += stepY;
-						side = 1; // y axis wall
-					}
-					
-					// Check if ray has hit a wall
-					hit = level.isWall(floor, mapX, mapY);
-				}
-				
-				if (side == 0) {
-					wallDistance = (mapX - camera.xPos + (1 - stepX) / 2) / rayDirX;
-				} else {
-					wallDistance = (mapY - camera.yPos + (1 - stepY) / 2) / rayDirY;
-				}
-				
-				// z-buffer holds distances to walls for each stripe (same for whole column)
-				// so it is used to determine if given sprite is visible or not
-				// relevant only on ground floor
-				zBuffer[x] = wallDistance;
-				
-				int lineHeight = (int) (height / wallDistance);
-				
-				// calculate lowest and highest pixel to fill in current stripe
-				// simple equation would be ((+/-)lineHeight) / 2 + height / 2
-				// consider look up/down (yShear) in calculation
-				// consider floor (each of the same height equal to lineHeight)
-				int drawStartNotClipped = -lineHeight / 2 + (height - ((lineHeight-1) * 2 * floor) + yShear) / 2;
-				int drawEndNotClipped = lineHeight / 2 + (height - ((lineHeight-1) * 2 * floor)  + yShear) / 2;
-				
-				// clip calculated values to screen
-				int drawStart = clipVertically(drawStartNotClipped);
-				int drawEnd = clipVertically(drawEndNotClipped);
-				
-				// element which was hit by the ray
-				Element element = level.getElement(floor, mapX, mapY);
-				
-				// if nothing was hit (ray went over the level, we can skip to next iteration
-				// warning - non-bounded level impossible on floor == 0 (ground)
-				if (element == null) {
-					continue;
-				}
-				
-				// texture coordinates in 0...1 
-				double wallX, wallY;
-				
-				// texture coordinates in real pixels
-				int u, v;
-				
-				if (Settings.walls == DrawMode.SOLID) {
-					int color = element.getColor(side);
-					
-					if (Settings.shading) {
-						color = GraphicsHelper.fadeToBlack(color, wallDistance, Settings.FOG_DISTANCE);
-					}
-					
-					if (Settings.walkingEffect) {
-						drawStart = clipVertically(drawStart + verticalDisplace);
-						drawEnd = clipVertically(drawEnd + verticalDisplace);
-					}
-					
-					drawLine(x, drawStart, drawEnd, color);
-				}
-				else if (Settings.walls == DrawMode.TEXTURED) {
-					Texture wallTexture = element.getWallTexture(side);
-					int textureWidth = wallTexture.getWidth();
-					
-					wallX = (side == 0) ? (camera.yPos + wallDistance * rayDirY) : (camera.xPos + wallDistance * rayDirX);
-					wallX -= Math.floor(wallX);
-					
-					u = (int) (wallX * textureWidth) % textureWidth;
-					
-					for (int y=drawStart; y<drawEnd; y++) {
-						wallY = ((((double)y*2 - (height + yShear) + lineHeight)) / lineHeight) / 2;
-						
-						while (wallY < 0) {
-							wallY++;
-						}
-						wallY -= Math.floor(wallY);
-						
-						
-						int texel;
-						if (!Settings.textureFiltering) {
-							v = (((y*2 - (height + yShear) + lineHeight) * textureWidth) / lineHeight) / 2;
-							// required adjust, since on upper floors coordinate (y-dependent) were negative
-							while (v < 0) {
-								v += textureWidth;
-							}
-							texel = wallTexture.getPixel(u, v);
-						}
-						else {
-							texel = wallTexture.getPixelWithFiltering(wallX, wallY);
-						}
-						
-						if (side == 0) {
-							// TODO optimize: pre-generate darker texture version
-							texel = new Color(texel).darker().getRGB();
-						}
-						
-						// optimize - move it higher, don't apply texture mapping but put black pixel if
-						// wallDistance >= FOG_DISTANCE
-						if (Settings.shading) {
-							int shadedTexel = GraphicsHelper.fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
-							
-							if (Settings.lights) {
-								
-								if (addShootLightEffects && x == width/2) {
-									Light light = new Light((double)mapX + wallX, (double)mapY + 0.5, Color.WHITE);
-									light.setLocation(LightLocation.WALL);
-									light.setRadius(0.3);
-									light.setIntensity(0.7);
-									light.setVanishTimeInFrames(5);
-									level.getLights().add(light);
-									addShootLightEffects = false;
-								}
-								
-				    			for (Light light : level.getLights()) {
-				    				if (light.getLocation() == LightLocation.WALL || light.getLocation() == LightLocation.ALL) {
-					    				double intensity = light.getIntensity((double)mapX + wallX, (double)mapY + wallY);
-					    				if (intensity > 0) {
-					    					shadedTexel = GraphicsHelper.mixColors(shadedTexel, texel, intensity);
-					    				}
-				    				}
-				    			}
-				    		}
-							
-							texel = shadedTexel;
-						}
-						
-						int y1 = y;
-						if (Settings.walkingEffect) {
-							y1 = clipVertically(y1 + verticalDisplace);
-						}
-						
-						buffer[y1*width+x] = texel;
-					}
-				
-					if (floor == 0) {
-						if (Settings.floors == DrawMode.TEXTURED) {
-							double floorXWall, floorYWall;
-							if (side == 0 && rayDirX > 0) {
-								floorXWall = mapX;
-								floorYWall = mapY + wallX;
-							} else if (side == 0 && rayDirX < 0) {
-								floorXWall = mapX + 1.0;
-								floorYWall = mapY + wallX;
-							} else if (side == 1 && rayDirY > 0) {
-								floorXWall = mapX + wallX;
-								floorYWall = mapY;
-							} else {
-								floorXWall = mapX + wallX;
-								floorYWall = mapY + 1.0;
-							}
-							
-							for (int y=drawEnd; y<height + Math.abs(yShear + verticalDisplace); y++) {
-								double currentDist = (height+yShear) / (2.0 * y - (height + yShear));
-				
-						        double weight = Math.abs(currentDist / (wallDistance + (wallDistance * camera.yShear)));
-						        
-						        // coordinates of point where the ray hits the floor
-						        double floorX = Math.abs(weight * floorXWall + (1.0 - weight) * camera.xPos);
-						        double floorY = Math.abs(weight * floorYWall + (1.0 - weight) * camera.yPos);
-								
-								Element floorElement = level.getElement(floor, (int)floorX, (int)floorY);
-								
-								// may be null if we look "behind" the level - can ignore that
-								if (floorElement != null) {
-									if (floorElement.isFloorVisible() || floorElement.isCeilingVisible()) {
-										
-										Texture floorTexture = floorElement.getFloorTexture();
-										Texture ceilingTexture = floorElement.getCeilingTexture();
-										textureWidth = floorTexture.getWidth();
-										
-								        int floorTexel;
-								        int ceilingTexel;
-								        
-								        if (!Settings.textureFiltering) {
-								        	
-								        	u = (int) (floorX * textureWidth) % textureWidth;
-									        v = (int) (floorY * textureWidth) % textureWidth;
-									        
-									        floorTexel = floorTexture.getPixel(u, v);
-										    ceilingTexel = ceilingTexture.getPixel(u, v); 
-								        } else {
-								        	
-								        	double tx = floorX - Math.floor(floorX);
-									        double ty = floorY - Math.floor(floorY);
-								        	
-								        	floorTexel = floorTexture.getPixelWithFiltering(tx, ty);
-									        ceilingTexel = ceilingTexture.getPixelWithFiltering(tx, ty); 
-								        }
-								        
-								    	int y1 = y + verticalDisplace;
-								    	int y2 = y - verticalDisplace;
-								        
-								    	if (y1 < height && floorElement.isFloorVisible()) {
-								    		
-								    		if (Settings.shading) {
-									    		int shadedTexel = GraphicsHelper.fadeToBlack(floorTexel, currentDist, floorShadeDistance);
-									    		
-									    		if (Settings.lights) {
-									    			for (Light light : level.getLights()) {
-									    				if (light.getLocation() == LightLocation.FLOOR || light.getLocation() == LightLocation.ALL) {
-										    				double intensity = light.getIntensity(floorX, floorY);
-										    				if (intensity > 0) {
-										    					shadedTexel = GraphicsHelper.mixColors(shadedTexel, floorTexel, intensity);
-										    				}
-									    				}
-									    			}
-									    		}
-									    		
-									    		floorTexel = shadedTexel;
-								    		}
-								    		
-								    		buffer[y1*width+x] = floorTexel; 
-								    	}
-								    	
-								    	// second condition -> don't draw over walls
-								        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace) && floorElement.isCeilingVisible()) {
-								        	if (Settings.shading) {
-									    		int shadedTexel = GraphicsHelper.fadeToBlack(ceilingTexel, currentDist , floorShadeDistance);
-									    		
-									    		if (Settings.lights) {
-									    			for (Light light : level.getLights()) {
-									    				if (light.getLocation() == LightLocation.CEILING || light.getLocation() == LightLocation.ALL) {
-										    				double intensity = light.getIntensity(floorX, floorY);
-										    				if (intensity > 0) {
-										    					shadedTexel = GraphicsHelper.mixColors(shadedTexel, ceilingTexel, intensity);
-										    				}
-									    				}
-									    			}
-									    		}
-									    		
-									    		ceilingTexel = shadedTexel;
-									    	}
-								        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
-								        }
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+		CountDownLatch countDownLatch = new CountDownLatch(THREADS);
+		
+		for (int thread=0; thread<THREADS; thread++) {
+			executor.submit(new ColumnDrawer(thread, THREADS, yShear, floorShadeDistance, countDownLatch));
 		}
+		
+		try {
+			countDownLatch.await();
+		} catch (InterruptedException e) {}
 
 		if (Settings.sprites) {
 			
@@ -451,7 +206,298 @@ public class Engine {
 		}
 		
 		frame++;
+	}
+	
+	private void drawColumn(int x, int floor, int yShear, double floorShadeDistance) {
+		
+		double cameraX = 2 * (x) / (double)(width) - 1; // in <-1, 1> coordinates
+		double rayDirX = camera.xDir + camera.xPlane * cameraX;
+		double rayDirY = camera.yDir + camera.yPlane * cameraX;
+	
+		// where are we on the map?
+		int mapX = (int) camera.xPos;
+		int mapY = (int) camera.yPos;
+		
+		double sideDistX;
+		double sideDistY;
+		
+		// length of ray from one x or y-side to next x or y-side
+		double deltaDistX = Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
+		double deltaDistY = Math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
+		double wallDistance;
+
+		// what direction to step in x or y-direction (either +1 or -1)
+		int stepX;
+		int stepY;
+
+		boolean hit = false; 
+		int side = 0; // was a NS or a EW wall hit?
+		
+		// calculate step and initial sideDist
+		if (rayDirX < 0) {
+			stepX = -1;
+			sideDistX = (camera.xPos - mapX) * deltaDistX;
+		} else {
+			stepX = 1;
+			sideDistX = (mapX + 1.0 - camera.xPos) * deltaDistX;
+		}
+		if (rayDirY < 0) {
+			stepY = -1;
+			sideDistY = (camera.yPos - mapY) * deltaDistY;
+		} else {
+			stepY = 1;
+			sideDistY = (mapY + 1.0 - camera.yPos) * deltaDistY;
+		}
+		
+		while (!hit) {
+			// jump to next map square, OR in x-direction, OR in y-direction
+			if (sideDistX < sideDistY) {
+				sideDistX += deltaDistX;
+				mapX += stepX;
+				side = 0; // x axis wall
+			} else {
+				sideDistY += deltaDistY;
+				mapY += stepY;
+				side = 1; // y axis wall
+			}
 			
+			// Check if ray has hit a wall
+			hit = level.isWall(floor, mapX, mapY);
+		}
+		
+		if (side == 0) {
+			wallDistance = (mapX - camera.xPos + (1 - stepX) / 2) / rayDirX;
+		} else {
+			wallDistance = (mapY - camera.yPos + (1 - stepY) / 2) / rayDirY;
+		}
+		
+		// z-buffer holds distances to walls for each stripe (same for whole column)
+		// so it is used to determine if given sprite is visible or not
+		// relevant only on ground floor
+		zBuffer[x] = wallDistance;
+		
+		int lineHeight = (int) (height / wallDistance);
+		
+		// calculate lowest and highest pixel to fill in current stripe
+		// simple equation would be ((+/-)lineHeight) / 2 + height / 2
+		// consider look up/down (yShear) in calculation
+		// consider floor (each of the same height equal to lineHeight)
+		int drawStartNotClipped = -lineHeight / 2 + (height - ((lineHeight-1) * 2 * floor) + yShear) / 2;
+		int drawEndNotClipped = lineHeight / 2 + (height - ((lineHeight-1) * 2 * floor)  + yShear) / 2;
+		
+		// clip calculated values to screen
+		int drawStart = clipVertically(drawStartNotClipped);
+		int drawEnd = clipVertically(drawEndNotClipped);
+		
+		// element which was hit by the ray
+		Element element = level.getElement(floor, mapX, mapY);
+		
+		// if nothing was hit (ray went over the level, we can skip to next iteration
+		// warning - non-bounded level impossible on floor == 0 (ground)
+		if (element == null) {
+			return;
+		}
+		
+		// texture coordinates in 0...1 
+		double wallX, wallY;
+		
+		// texture coordinates in real pixels
+		int u, v;
+		
+		if (Settings.walls == DrawMode.SOLID) {
+			int color = element.getColor(side);
+			
+			if (Settings.shading) {
+				color = GraphicsHelper.fadeToBlack(color, wallDistance, Settings.FOG_DISTANCE);
+			}
+			
+			if (Settings.walkingEffect) {
+				drawStart = clipVertically(drawStart + verticalDisplace);
+				drawEnd = clipVertically(drawEnd + verticalDisplace);
+			}
+			
+			drawLine(x, drawStart, drawEnd, color);
+		}
+		else if (Settings.walls == DrawMode.TEXTURED) {
+			Texture wallTexture = element.getWallTexture(side);
+			int textureWidth = wallTexture.getWidth();
+			
+			wallX = (side == 0) ? (camera.yPos + wallDistance * rayDirY) : (camera.xPos + wallDistance * rayDirX);
+			wallX -= Math.floor(wallX);
+			
+			u = (int) (wallX * textureWidth) % textureWidth;
+			
+			for (int y=drawStart; y<drawEnd; y++) {
+				wallY = ((((double)y*2 - (height + yShear) + lineHeight)) / lineHeight) / 2;
+				
+				while (wallY < 0) {
+					wallY++;
+				}
+				wallY -= Math.floor(wallY);
+				
+				
+				int texel;
+				if (!Settings.textureFiltering) {
+					v = (((y*2 - (height + yShear) + lineHeight) * textureWidth) / lineHeight) / 2;
+					// required adjust, since on upper floors coordinate (y-dependent) were negative
+					while (v < 0) {
+						v += textureWidth;
+					}
+					texel = wallTexture.getPixel(u, v);
+				}
+				else {
+					texel = wallTexture.getPixelWithFiltering(wallX, wallY);
+				}
+				
+				if (side == 0) {
+					// TODO optimize: pre-generate darker texture version
+					texel = new Color(texel).darker().getRGB();
+				}
+				
+				// optimize - move it higher, don't apply texture mapping but put black pixel if
+				// wallDistance >= FOG_DISTANCE
+				if (Settings.shading) {
+					int shadedTexel = GraphicsHelper.fadeToBlack(texel, wallDistance, Settings.FOG_DISTANCE);
+					
+					if (Settings.lights) {
+						
+						if (addShootLightEffects && x == width/2) {
+							Light light = new Light((double)mapX + wallX, (double)mapY + 0.5, Color.WHITE);
+							light.setLocation(LightLocation.WALL);
+							light.setRadius(0.3);
+							light.setIntensity(0.7);
+							light.setVanishTimeInFrames(5);
+							level.getLights().add(light);
+							addShootLightEffects = false;
+						}
+						
+		    			for (Light light : level.getLights()) {
+		    				if (light.getLocation() == LightLocation.WALL || light.getLocation() == LightLocation.ALL) {
+			    				double intensity = light.getIntensity((double)mapX + wallX, (double)mapY + wallY);
+			    				if (intensity > 0) {
+			    					shadedTexel = GraphicsHelper.mixColors(shadedTexel, texel, intensity);
+			    				}
+		    				}
+		    			}
+		    		}
+					
+					texel = shadedTexel;
+				}
+				
+				int y1 = y;
+				if (Settings.walkingEffect) {
+					y1 = clipVertically(y1 + verticalDisplace);
+				}
+				
+				buffer[y1*width+x] = texel;
+			}
+		
+			if (floor == 0) {
+				if (Settings.floors == DrawMode.TEXTURED) {
+					double floorXWall, floorYWall;
+					if (side == 0 && rayDirX > 0) {
+						floorXWall = mapX;
+						floorYWall = mapY + wallX;
+					} else if (side == 0 && rayDirX < 0) {
+						floorXWall = mapX + 1.0;
+						floorYWall = mapY + wallX;
+					} else if (side == 1 && rayDirY > 0) {
+						floorXWall = mapX + wallX;
+						floorYWall = mapY;
+					} else {
+						floorXWall = mapX + wallX;
+						floorYWall = mapY + 1.0;
+					}
+					
+					for (int y=drawEnd; y<height + Math.abs(yShear + verticalDisplace); y++) {
+						double currentDist = (height+yShear) / (2.0 * y - (height + yShear));
+		
+				        double weight = Math.abs(currentDist / (wallDistance + (wallDistance * camera.yShear)));
+				        
+				        // coordinates of point where the ray hits the floor
+				        double floorX = Math.abs(weight * floorXWall + (1.0 - weight) * camera.xPos);
+				        double floorY = Math.abs(weight * floorYWall + (1.0 - weight) * camera.yPos);
+						
+						Element floorElement = level.getElement(floor, (int)floorX, (int)floorY);
+						
+						// may be null if we look "behind" the level - can ignore that
+						if (floorElement != null) {
+							if (floorElement.isFloorVisible() || floorElement.isCeilingVisible()) {
+								
+								Texture floorTexture = floorElement.getFloorTexture();
+								Texture ceilingTexture = floorElement.getCeilingTexture();
+								textureWidth = floorTexture.getWidth();
+								
+						        int floorTexel;
+						        int ceilingTexel;
+						        
+						        if (!Settings.textureFiltering) {
+						        	
+						        	u = (int) (floorX * textureWidth) % textureWidth;
+							        v = (int) (floorY * textureWidth) % textureWidth;
+							        
+							        floorTexel = floorTexture.getPixel(u, v);
+								    ceilingTexel = ceilingTexture.getPixel(u, v); 
+						        } else {
+						        	
+						        	double tx = floorX - Math.floor(floorX);
+							        double ty = floorY - Math.floor(floorY);
+						        	
+						        	floorTexel = floorTexture.getPixelWithFiltering(tx, ty);
+							        ceilingTexel = ceilingTexture.getPixelWithFiltering(tx, ty); 
+						        }
+						        
+						    	int y1 = y + verticalDisplace;
+						    	int y2 = y - verticalDisplace;
+						        
+						    	if (y1 < height && floorElement.isFloorVisible()) {
+						    		
+						    		if (Settings.shading) {
+							    		int shadedTexel = GraphicsHelper.fadeToBlack(floorTexel, currentDist, floorShadeDistance);
+							    		
+							    		if (Settings.lights) {
+							    			for (Light light : level.getLights()) {
+							    				if (light.getLocation() == LightLocation.FLOOR || light.getLocation() == LightLocation.ALL) {
+								    				double intensity = light.getIntensity(floorX, floorY);
+								    				if (intensity > 0) {
+								    					shadedTexel = GraphicsHelper.mixColors(shadedTexel, floorTexel, intensity);
+								    				}
+							    				}
+							    			}
+							    		}
+							    		
+							    		floorTexel = shadedTexel;
+						    		}
+						    		
+						    		buffer[y1*width+x] = floorTexel; 
+						    	}
+						    	
+						    	// second condition -> don't draw over walls
+						        if ((height+yShear-y2) >= 0 && (height+yShear-y2) < (drawStart + verticalDisplace) && floorElement.isCeilingVisible()) {
+						        	if (Settings.shading) {
+							    		int shadedTexel = GraphicsHelper.fadeToBlack(ceilingTexel, currentDist , floorShadeDistance);
+							    		
+							    		if (Settings.lights) {
+							    			for (Light light : level.getLights()) {
+							    				if (light.getLocation() == LightLocation.CEILING || light.getLocation() == LightLocation.ALL) {
+								    				double intensity = light.getIntensity(floorX, floorY);
+								    				if (intensity > 0) {
+								    					shadedTexel = GraphicsHelper.mixColors(shadedTexel, ceilingTexel, intensity);
+								    				}
+							    				}
+							    			}
+							    		}
+							    		
+							    		ceilingTexel = shadedTexel;
+							    	}
+						        	buffer[(height+yShear-y2)*width+x] = ceilingTexel;
+						        }
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	private void updateLights(double frameTime) {
