@@ -5,11 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import com.nowicki.raycaster.engine.Light.LightLocation;
 import com.nowicki.raycaster.engine.Settings.DrawMode;
@@ -46,7 +45,9 @@ public class Engine {
 	private List<Shader> shaders = new ArrayList<Shader>();
 	
 	private boolean addShootLightEffects = false;
-	ExecutorService executor;
+	
+	private ExecutorService executor;
+	private List<ColumnRenderer> renderers = new ArrayList<>();
 	
 	public Engine(int widht, int height, Camera camera, Weapon weapon) {
 		this.width = widht;
@@ -61,32 +62,61 @@ public class Engine {
 		shaders.add(rainShader);
 		
 		executor = Executors.newFixedThreadPool(THREADS);
+		
+		for (int thread=0; thread<THREADS; thread++) {
+			ColumnRenderer renderer = new ColumnRenderer(thread, THREADS);
+			renderers.add(renderer);
+			executor.submit(renderer);
+		}
+		
 	}
 	
-	public class ColumnDrawer implements Runnable {
+	public class ColumnRenderer implements Callable<Void> {
 
 		private int start;
 		private int step;
 		private int yShear;
 		private double floorShadeDistance;
 		private CountDownLatch countDownLatch;
+		
+		private boolean startRendering = false;
 
-		public ColumnDrawer(int start, int step, int yShear, double floorShadeDistance, CountDownLatch countDownLatch) {
+		public ColumnRenderer(int start, int step) {
 			this.start = start;
 			this.step = step;
+			
+		}
+		
+		public void renderFrame(int yShear, double floorShadeDistance, CountDownLatch countDownLatch) {
 			this.yShear = yShear;
 			this.floorShadeDistance = floorShadeDistance;
 			this.countDownLatch = countDownLatch;
+			this.startRendering = true;
 		}
 		
 		@Override
-		public void run() {
-			for (int floor=FLOORS-1; floor>=0; floor--) {
-				for (int x=start; x<width; x+=step) {
-					drawColumn(x, floor, yShear, floorShadeDistance);
+		public Void call() throws Exception {
+			Thread.currentThread().setName("column-renderer-"+start);
+			while (true) {
+				
+				while (!startRendering) {
+					Thread.sleep(1);
+				}
+				
+				long startTime = System.currentTimeMillis();
+			
+				for (int floor=FLOORS-1; floor>=0; floor--) {
+					for (int x=start; x<width; x+=step) {
+						drawColumn(x, floor, yShear, floorShadeDistance);
+					}
+				}
+				countDownLatch.countDown();
+				startRendering = false;
+				
+				if (Settings.debug) {
+					System.out.println("Thread "+Thread.currentThread().getName()+" "+(System.currentTimeMillis()-startTime)+" ms ");
 				}
 			}
-			countDownLatch.countDown();
 		}
 		
 	}
@@ -127,16 +157,22 @@ public class Engine {
 			verticalDisplace = 0;
 		}
 		
-		CountDownLatch countDownLatch = new CountDownLatch(THREADS);
 		
-		for (int thread=0; thread<THREADS; thread++) {
-			executor.submit(new ColumnDrawer(thread, THREADS, yShear, floorShadeDistance, countDownLatch));
+		
+		// countdown latch to wait for every thread completion
+		CountDownLatch countDownLatch = new CountDownLatch(renderers.size());
+		
+		// trigger rendering of all columns
+		for (ColumnRenderer renderer : renderers) {
+			renderer.renderFrame(yShear, floorShadeDistance, countDownLatch);
 		}
 		
 		try {
 			countDownLatch.await();
 		} catch (InterruptedException e) {}
 
+		
+		
 		if (Settings.sprites) {
 			
 			// calculate distance between sprinte and camera
