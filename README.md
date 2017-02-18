@@ -21,8 +21,10 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * different floor & ceiling textures
 * outside areas with different landsape projections
 * simple shaders concept with sample shaders
+ * motion blur
  * rain effect in outside areas
  * storm lightnings in outside areas
+ * image distort (sinus waving, randmom blur) - "drunk effect"
 * **EXPERIMENTAL** multithreaded concurrent frame rendering
 
 ## plans (in order of priority)
@@ -54,6 +56,10 @@ My engine is written 100% in Java and uses software rendering, so the speed... W
 * X - sprites on/off
 * T - texture bilinear filtering on/off (warning: slow!)
 * G - weapon on/off
+* F1 - rain on/off
+* F2 - lightnings on/off
+* F3 - motion blur on/off
+* F4 - "drunk mode" on/off
 * D - debug info on screen and console on/off
 * ESC - quit
 * ENTER - toggle "fullscreen" mode
