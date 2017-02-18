@@ -4,7 +4,7 @@ import java.awt.Color;
 
 import com.nowicki.raycaster.engine.GraphicsHelper;
 
-public class StormShader extends AbstarctShader {
+public class StormShader extends AbstractShader {
 
 	
 	public static final double LIGHTNING_PROBABILITY = 0.005;
@@ -16,6 +16,10 @@ public class StormShader extends AbstarctShader {
 	private boolean displayingLightning = false;
 	private int frame = 0;
 	
+	public StormShader(boolean enabled) {
+		super(enabled);
+	}
+
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);

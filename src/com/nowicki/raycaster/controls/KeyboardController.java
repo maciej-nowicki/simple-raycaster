@@ -115,6 +115,12 @@ public class KeyboardController implements KeyListener {
 			display.toggleFullscreen();
 			break;
 		}
+		
+		for (Integer keyCode : engine.getShaders().keySet()) {
+			if (e.getKeyCode() == keyCode) {
+				engine.getShaders().get(keyCode).setEnabled(!engine.getShaders().get(keyCode).isEnabled());
+			}
+		}
 	}
 
 	@Override

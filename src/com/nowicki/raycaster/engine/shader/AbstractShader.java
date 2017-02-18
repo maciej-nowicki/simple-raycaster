@@ -1,14 +1,14 @@
 package com.nowicki.raycaster.engine.shader;
 
-public abstract class AbstarctShader implements Shader {
+public abstract class AbstractShader implements Shader {
 
 	protected boolean enabled;
 
-	public AbstarctShader() {
+	public AbstractShader() {
 		this(true);
 	}
 	
-	public AbstarctShader(boolean enabled) {
+	public AbstractShader(boolean enabled) {
 		setEnabled(enabled);
 	}
 	

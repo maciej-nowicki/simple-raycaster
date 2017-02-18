@@ -4,7 +4,7 @@ import java.awt.Color;
 
 import com.nowicki.raycaster.engine.GraphicsHelper;
 
-public class RainShader extends AbstarctShader {
+public class RainShader extends AbstractShader {
 	
 	public static final Color RAIN_COLOR = Color.LIGHT_GRAY;
 	public static final int MAX_DROP_LENGTH = 25;

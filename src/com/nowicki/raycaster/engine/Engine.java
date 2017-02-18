@@ -1,10 +1,11 @@
 package com.nowicki.raycaster.engine;
 
 import java.awt.Color;
-import java.util.ArrayList;
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.nowicki.raycaster.engine.Light.LightLocation;
 import com.nowicki.raycaster.engine.Settings.DrawMode;
@@ -35,8 +36,7 @@ public class Engine {
 	private long frame = 0;
 	
 	private RainShader rainShader;
-	private StormShader stormShader;
-	private List<Shader> shaders = new ArrayList<Shader>();
+	private Map<Integer, Shader> shaders = new LinkedHashMap<>();
 	
 	private boolean addShootLightEffects = false;
 	
@@ -46,13 +46,11 @@ public class Engine {
 		this.weapon = weapon;
 		this.zBuffer = new double[widht];
 		
-		stormShader = new StormShader();
 		rainShader = new RainShader();
-		
-		shaders.add(stormShader);
-		shaders.add(rainShader);
-		shaders.add(new MotionBlurShader());
-		shaders.add(new DistortShader());
+		shaders.put(KeyEvent.VK_F1, rainShader);
+		shaders.put(KeyEvent.VK_F2, new StormShader(false));
+		shaders.put(KeyEvent.VK_F3, new MotionBlurShader(false));
+		shaders.put(KeyEvent.VK_F4, new DistortShader(false));
 	}
 
 	public void tick(Camera camera, double frameTime) {
@@ -65,7 +63,6 @@ public class Engine {
 		// update rain & storm shader - rains only if on ground floor we have no ceiling above
 		// storm shader disabled, because it's annoying in the long run ;)
 		rainShader.setEnabled(!level.getElement(0, (int)camera.xPos, (int)camera.yPos).isCeilingVisible());
-		stormShader.setEnabled(false);
 
 		// look up/down amount same for every pixel
 		int yShear = (int) (height * camera.yShear);
@@ -449,7 +446,7 @@ public class Engine {
 		}
 		
 		// apply enabled shaders 
-		shaders.stream().filter(s -> s.isEnabled()).forEach(shader -> shader.apply(buffer, width, height));
+		shaders.values().stream().filter(s -> s.isEnabled()).forEach(shader -> shader.apply(buffer, width, height));
 		
 		if (Settings.showWeapon) {
 			drawWeapon(frameTime);
@@ -656,5 +653,8 @@ public class Engine {
 		return weapon;
 	}
 
+	public Map<Integer, Shader> getShaders() {
+		return shaders;
+	}
 
 }
