@@ -9,6 +9,7 @@ import java.util.List;
 import com.nowicki.raycaster.engine.Light.LightLocation;
 import com.nowicki.raycaster.engine.Settings.DrawMode;
 import com.nowicki.raycaster.engine.Settings.SkyMode;
+import com.nowicki.raycaster.engine.shader.DistortShader;
 import com.nowicki.raycaster.engine.shader.MotionBlurShader;
 import com.nowicki.raycaster.engine.shader.RainShader;
 import com.nowicki.raycaster.engine.shader.Shader;
@@ -51,6 +52,7 @@ public class Engine {
 		shaders.add(stormShader);
 		shaders.add(rainShader);
 		shaders.add(new MotionBlurShader());
+		shaders.add(new DistortShader());
 	}
 
 	public void tick(Camera camera, double frameTime) {
