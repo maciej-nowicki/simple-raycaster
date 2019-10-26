@@ -22,7 +22,7 @@ public class Weapon {
 		this.frameSequence = frameSequence;
 		this.f = 0;
 
-		BufferedImage image = ImageIO.read(new File(filename));
+		BufferedImage image = ImageIO.read(getClass().getClassLoader().getResourceAsStream(filename));
 		this.frameHeight = image.getHeight();
 		
 		int frameWidth = 0;

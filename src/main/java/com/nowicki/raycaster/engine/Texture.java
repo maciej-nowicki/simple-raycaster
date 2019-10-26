@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.imageio.ImageIO;
 
@@ -14,7 +16,7 @@ public class Texture {
 	private final int height;
 
 	public Texture(String filename) throws IOException {
-		BufferedImage image = ImageIO.read(new File(filename));
+		BufferedImage image = ImageIO.read(getClass().getClassLoader().getResourceAsStream(filename));
 		this.pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
 		this.width = image.getWidth();
 		this.height = image.getHeight();

@@ -1,14 +1,15 @@
 package com.nowicki.raycaster.engine;
 
 import java.awt.Color;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.nowicki.raycaster.engine.Element.Entry;
 import com.nowicki.raycaster.engine.Element.EntryType;
@@ -28,51 +29,48 @@ public class Level {
 	private int height;
 	
 	public Level(String filename, Map<Entry, Texture> textures) {
-		try {
-			sky = textures.get(Entry.SKY);
-			
-			String content = new String(Files.readAllBytes(Paths.get(filename)));
-			String [] lines = content.split("\n");
-			height = lines.length;
-			for (int j=0; j<height; j++) {
-				String [] entries = lines[j].split(",");
-				width = entries.length;
-				if (map == null) {
-					map = new Element[Engine.FLOORS][width][height];
-				}
-				for (int i=0; i<width; i++) {
-	
+		sky = textures.get(Entry.SKY);
+		
+		String content = new BufferedReader(new InputStreamReader(getClass().getClassLoader().getResourceAsStream(filename)))
+				  .lines().collect(Collectors.joining("\n"));
+		String [] lines = content.split("\n");
+		height = lines.length;
+		for (int j=0; j<height; j++) {
+			String [] entries = lines[j].split(",");
+			width = entries.length;
+			if (map == null) {
+				map = new Element[Engine.FLOORS][width][height];
+			}
+			for (int i=0; i<width; i++) {
+
+				
+				String entryId = entries[i];
+				String [] floorEntries = entryId.split(";");
+				for (int f=0; f<Engine.FLOORS; f++) {
 					
-					String entryId = entries[i];
-					String [] floorEntries = entryId.split(";");
-					for (int f=0; f<Engine.FLOORS; f++) {
-						
-						Set<Entry> entriesSet = new HashSet<>();
-						if (floorEntries.length > f) {
-							String floorEntryId = floorEntries[f];
-							for (int p=0; p<floorEntryId.length(); p++) {
-								Entry entry = Entry.fromValue(floorEntryId.charAt(p));
-								if (entry.getType() == EntryType.SPRITE) {
-									addSprite(textures.get(entry), i, j);
-								} else if (entry.getType() == EntryType.LIGHT) {
-									addLight(entry, i, j);
-								}
-								else {
-									entriesSet.add(entry);
-								}
+					Set<Entry> entriesSet = new HashSet<>();
+					if (floorEntries.length > f) {
+						String floorEntryId = floorEntries[f];
+						for (int p=0; p<floorEntryId.length(); p++) {
+							Entry entry = Entry.fromValue(floorEntryId.charAt(p));
+							if (entry.getType() == EntryType.SPRITE) {
+								addSprite(textures.get(entry), i, j);
+							} else if (entry.getType() == EntryType.LIGHT) {
+								addLight(entry, i, j);
 							}
-							
-							map[f][i][j] = new Element(entriesSet, textures);
+							else {
+								entriesSet.add(entry);
+							}
 						}
-						else {
-							entriesSet.add(Entry.EMPTY);
-							map[f][i][j] = new Element(entriesSet, textures);
-						}
+						
+						map[f][i][j] = new Element(entriesSet, textures);
+					}
+					else {
+						entriesSet.add(Entry.EMPTY);
+						map[f][i][j] = new Element(entriesSet, textures);
 					}
 				}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 	

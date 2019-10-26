@@ -28,8 +28,8 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	
 	public static final String FRAME_TITLE = "Raycaster demo";
 	
-	public static final int WIDTH = 640;
-	public static final int HEIGHT = 400;
+	public static final int WIDTH = 320;
+	public static final int HEIGHT = 200;
 	public static final int FPS_LIMIT = 50;
 	public static final long FRAME_TIME_MILIS = 1000 / FPS_LIMIT;
 	
@@ -55,7 +55,7 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 		
 		loadTextures();
 		loadWeapons();
-		Level level = new Level("data/raycaster/level.txt", textures);
+		Level level = new Level("level.txt", textures);
 		
 		engine = new Engine(WIDTH, HEIGHT, weapon);
 		engine.setLevel(level);
@@ -86,24 +86,24 @@ public class RaycasterDisplay extends JFrame implements Runnable {
 	}
 	
 	private void loadTextures() throws IOException {
-		textures.put(Entry.WALL_1_GREYSTONE, new Texture("data/raycaster/pics/greystone.png"));
-		textures.put(Entry.WALL_2_BLUESTONE, new Texture("data/raycaster/pics/bluestone.png"));
-		textures.put(Entry.WALL_3_COLORSTONE, new Texture("data/raycaster/pics/colorstone.png"));
-		textures.put(Entry.WALL_4_WOOD, new Texture("data/raycaster/pics/wood.png"));
-		textures.put(Entry.WALL_5_BRICK, new Texture("data/raycaster/pics/redbrick.png"));
-		textures.put(Entry.WALL_6_BRICK_WITH_EAGLE, new Texture("data/raycaster/pics/eagle.png"));
-		textures.put(Entry.BARREL, new Texture("data/raycaster/pics/barrel.png"));
-		textures.put(Entry.PILLAR, new Texture("data/raycaster/pics/pillar.png"));
-		textures.put(Entry.CEILING_LAMP, new Texture("data/raycaster/pics/greenlight.png"));
-		textures.put(Entry.DEFAULT_FLOOR, new Texture("data/raycaster/pics/floor.png"));
-		textures.put(Entry.DEFAULT_CEILING, new Texture("data/raycaster/pics/ceiling.png"));
-		textures.put(Entry.RED_CARPET, new Texture("data/raycaster/pics/redcarpet.png"));
-		textures.put(Entry.GRASS, new Texture("data/raycaster/pics/grass.png"));
-		textures.put(Entry.SKY, new Texture("data/raycaster/pics/sky.png"));
+		textures.put(Entry.WALL_1_GREYSTONE, new Texture("pics/greystone.png"));
+		textures.put(Entry.WALL_2_BLUESTONE, new Texture("pics/bluestone.png"));
+		textures.put(Entry.WALL_3_COLORSTONE, new Texture("pics/colorstone.png"));
+		textures.put(Entry.WALL_4_WOOD, new Texture("pics/wood.png"));
+		textures.put(Entry.WALL_5_BRICK, new Texture("pics/redbrick.png"));
+		textures.put(Entry.WALL_6_BRICK_WITH_EAGLE, new Texture("pics/eagle.png"));
+		textures.put(Entry.BARREL, new Texture("pics/barrel.png"));
+		textures.put(Entry.PILLAR, new Texture("pics/pillar.png"));
+		textures.put(Entry.CEILING_LAMP, new Texture("pics/greenlight.png"));
+		textures.put(Entry.DEFAULT_FLOOR, new Texture("pics/floor.png"));
+		textures.put(Entry.DEFAULT_CEILING, new Texture("pics/ceiling.png"));
+		textures.put(Entry.RED_CARPET, new Texture("pics/redcarpet.png"));
+		textures.put(Entry.GRASS, new Texture("pics/grass.png"));
+		textures.put(Entry.SKY, new Texture("pics/sky.png"));
 	}
 	
 	private void loadWeapons() throws IOException {
-		weapon = new Weapon("data/raycaster/pics/shotgun.png", 
+		weapon = new Weapon("pics/shotgun.png", 
 				new int[] { 0, 1, 2, 3, 3, 4, 4, 5, 5, 4, 4, 3 },
 				new int[] { 87, 172, 256, 386, 480, 596 });
 	}
