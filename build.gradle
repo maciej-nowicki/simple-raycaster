@@ -1,5 +1,4 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
 apply plugin: 'application'
 
 mainClassName = 'com.nowicki.raycaster.RaycasterDemo'
@@ -8,8 +7,8 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 14
+targetCompatibility = 14
 
 jar {
     baseName = 'simple-raycaster'
